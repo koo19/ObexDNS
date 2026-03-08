@@ -8,7 +8,7 @@
     "start": "npm run build && wrangler dev",
     "deploy": "npm run build && wrangler deploy",
     "build": "npm run ui:build",
-    "install": "npm run ui:install && npm install -f",
+    "postinstall": "npm run ui:install",
     "db:setup": "wrangler d1 create obex_db",
     "db:migrate": "wrangler d1 migrations apply obex_db --local",
     "db:status": "wrangler d1 execute obex_db --local --command='SELECT name FROM sqlite_master WHERE type=\"table\"'",
