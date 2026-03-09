@@ -39,7 +39,7 @@
   "auth": {
     "login": "登录 Obex DNS",
     "signup": "创建账户以开始",
-    "welcomeBack": "欢迎回来，请阁下输入凭据",
+    "welcomeBack": "欢迎回来，请输入凭据",
     "protectInternet": "保护您的互联网第一跳",
     "error": "错误",
     "username": "用户名",
