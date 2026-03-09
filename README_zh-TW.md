@@ -1,0 +1,129 @@
+<div align="center">
+  <img src="web/src/assets/Obex_DNS_Logo-256.png" alt="Obex DNS Logo" width="128">
+  <h1>Obex DNS</h1>
+  <p>基於 Cloudflare Workers & D1 的 Protective DNS 解析服務</p>
+  <p align="center">
+    正體中文 | <a href="/README_zh-CN.md">简体中文</a> | <a href="/README_EN.md">English </a>
+  </p>
+
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![Platform: Cloudflare Workers](https://img.shields.io/badge/Platform-Cloudflare%20Workers-orange.svg)](https://workers.cloudflare.com/)
+
+</div>
+
+---
+
+## 📖 簡介
+
+**Obex DNS** 是一個輕量級、可擴展的隱私保護 DNS 解析系統。它完全運行在 Cloudflare 的邊緣網路上，利用 Workers 的極速回應和 D1 資料庫的高效存儲，為使用者提供精細化 DNS 控制體驗。
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ObexDNS/ObexDNS)
+
+### 什麼是 DNS over HTTPS (DoH)？
+
+DoH (RFC 8484) 是一種透過加密的 HTTPS 連線進行 DNS 查詢的協定。與傳統明文 DNS 相比，DoH 能夠：
+
+- **防止劫持**：防止 ISP 或第三方篡改 DNS 回應。
+- **增強隱私**：透過加密隧道隱藏您的瀏覽紀錄。
+- **繞過審查**：在受限網路環境下提供更穩定的解析服務。
+
+---
+
+## ✨ 核心功能
+
+- 🚀 **極速解析**：完全基於邊緣運算，全球延遲極低。
+- 多配置管理 (Profiles)\*\*：支援建立多個獨立配置，每個配置擁有唯一的端點。
+- 🛡️ **精細過濾**：
+  - **黑/白名單**：支援精確網域及子網域萬用字元。
+  - **第三方規則集**：支援訂閱 AdGuard 等格式的外部攔截清單。
+  - **自訂重新導向**：支援 A/AAAA/TXT/CNAME 紀錄的自訂覆蓋。
+- 📊 **即時統計與日誌**：視覺化儀表板，紀錄每一次請求的命中原因、地理位置及上游延遲。
+- 🔐 **隱私增強**：支援 ECS (EDNS Client Subnet) 靈活配置（透傳、自訂或隱藏）。
+- 🌗 **現代 UI**：支援暗黑模式，基於 React + BlueprintJS 建構的高密度管理面板。
+
+---
+
+## 🛠️ 技術架構
+
+### 程式碼結構
+
+```text
+├── src/
+│   ├── index.ts          # 入口檔案，處理 HTTP 路由與中介軟體
+│   ├── types.ts          # 型別定義
+│   ├── api/              # API 控制器 (Auth, Account, Profiles)
+│   ├── lib/              # 核心邏輯 (RBAC, 規則過濾)
+│   ├── models/           # D1 資料庫模型
+│   ├── pipeline/         # DNS 解析管線 (核心業務邏輯)
+│   └── utils/            # 工具類 (快取, GeoIP, DNS 編解碼, Bloom 過濾器)
+├── web/                  # React/BlueprintJS UI 前端專案
+├── migrations/           # D1 資料庫遷移腳本
+└── wrangler.toml         # Cloudflare 部署配置
+```
+
+### 解析管線 (Resolution Pipeline)
+
+當一個 DNS 請求到達時，它會經過以下處理階段：
+
+1.  **記憶體快取檢查**：檢查邊緣節點記憶體中是否存在該查詢的有效回應。
+2.  **配置載入**：從記憶體 -> Cache API -> D1 資料庫分層載入 Profile 設定。
+3.  **本地規則比對**：
+    - **白名單**：命中則直接轉發上游並返回。
+    - **重新導向**：命中則返回自訂紀錄。
+    - **黑名單**：命中則返回 NXDOMAIN。
+4.  **外部清單過濾**：
+    - 利用 **Bloom Filter** (布隆過濾器) 進行快速初篩。
+    - 結合 **Cache API** 快取判定結果，減少資料庫壓力。
+5.  **上游解析**：若以上均未命中，則根據配置請求上游 DoH 伺服器，並支援 ECS 處理。
+6.  **非同步日誌與快取**：非同步紀錄解析日誌、獲取目標 GeoIP，並將結果寫入各級快取。
+
+---
+
+## 🚀 部署指南
+
+### 開發環境參考
+
+- **Node.js**: v18.x 或更高版本
+- **Package Manager**: npm
+- **Cloudflare Account**: 需要開啟 Workers 和 D1 權限
+
+### 本地開發
+
+1.  複製倉庫並安裝依賴：
+
+```bash
+npm install
+```
+
+2.  初始化 D1 資料庫：
+
+```bash
+npm run db:setup
+npm run db:migrate
+```
+
+3.  啟動開發伺服器：
+
+```bash
+npm run dev
+```
+
+4.  部署上線
+
+```bash
+npm run deploy
+```
+
+### 線上部署 (Cloudflare Dashboard)
+
+1.  **Fork 本專案**：點擊頁面右上角的 `Fork` 按鈕，將倉庫複製到你的 GitHub 帳號下。
+2.  **建立 D1 資料庫**：登入 Cloudflare 控制台，前往 `Workers & Pages` > `D1`，建立一個新的資料庫（例如命名為 `obex_db`），並複製所建立的資料庫 ID。
+3.  **配置資料庫 ID**：在你的 Fork 倉庫中，修改 `wrangler.toml` 檔案，將 `database_id` 替換為你剛才建立的資料庫 ID。
+4.  **建立 Worker**：前往 Cloudflare 控制台 `Workers & Pages` > `Create application` > `Create Worker`。
+5.  **從 GitHub 匯入**：在部署頁面選擇 `Deploy from GitHub`，關聯你 Fork 的專案並完成授權部署。
+
+---
+
+## 📄 開源協定
+
+本專案採用 AGPLv3 協定授權。

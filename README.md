@@ -1,126 +1,120 @@
 <div align="center">
   <img src="web/src/assets/Obex_DNS_Logo-256.png" alt="Obex DNS Logo" width="128">
   <h1>Obex DNS</h1>
-  <p>基于 Cloudflare Workers & D1 的 Protective DNS 解析服务</p>
+  <p>Protective DNS resolver based on Cloudflare Workers & D1</p>
+  <p align="center">
+    English | <a href="/README_zh-CN.md">简体中文</a> | <a href="/README_zh-TW.md">正體中文</a>
+  </p>
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
-[![Platform: Cloudflare Workers](https://img.shields.io/badge/Platform-Cloudflare%20Workers-orange.svg)](https://workers.cloudflare.com/)
-
+  [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+  [![Platform: Cloudflare Workers](https://img.shields.io/badge/Platform-Cloudflare%20Workers-orange.svg)](https://workers.cloudflare.com/)
 </div>
 
 ---
 
-## 📖 简介
+## 📖 Introduction
 
-**Obex DNS** 是一个轻量级、可扩展的隐私保护 DNS 解析系统。它完全运行在 Cloudflare 的边缘网络上，利用 Workers 的极速响应和 D1 数据库的高效存储，为用户提供精细化 DNS 控制体验。
-
-### 什么是 DNS over HTTPS (DoH)？
-
-DoH (RFC 8484) 是一种通过加密的 HTTPS 连接进行 DNS 查询的协议。与传统明文 DNS 相比，DoH 能够：
-
-- **防止劫持**：防止 ISP 或第三方篡改 DNS 响应。
-- **增强隐私**：通过加密隧道隐藏您的浏览记录。
-- **绕过审查**：在受限网络环境下提供更稳定的解析服务。
+**Obex DNS** is a lightweight, scalable, and privacy-focused DNS resolution system. It runs entirely on Cloudflare's edge network, leveraging the ultra-fast response of Workers and the efficient storage of D1 database to provide users with a granular DNS control experience.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ObexDNS/ObexDNS)
 
----
-
-## ✨ 核心功能
-
-- 🚀 **极速解析**：完全基于边缘计算，全球延迟极低。
-- 多配置管理 (Profiles)\*\*：支持创建多个独立配置，每个配置拥有唯一的端点。
-- 🛡️ **精细过滤**：
-  - **黑/白名单**：支持精确域名及子域名通配符。
-  - **第三方规则集**：支持订阅 AdGuard 等格式的外部拦截列表。
-  - **自定义重定向**：支持 A/AAAA/TXT/CNAME 记录的自定义覆盖。
-- 📊 **实时统计与日志**：可视化仪表盘，记录每一次请求的命中原因、地理位置及上游延迟。
-- 🔐 **隐私增强**：支持 ECS (EDNS Client Subnet) 灵活配置（透传、自定义或隐藏）。
-- 🌗 **现代 UI**：支持暗黑模式，基于 React + BlueprintJS 构建的高密度管理面板。
+### What is DNS over HTTPS (DoH)?
+DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS connections. Compared to traditional plaintext DNS, DoH can:
+*   **Prevent Hijacking**: Prevents ISPs or third parties from tampering with DNS responses.
+*   **Enhance Privacy**: Hides your browsing history through an encrypted tunnel.
+*   **Bypass Censorship**: Provides more stable resolution in restricted network environments.
 
 ---
 
-## 🛠️ 技术架构
+## ✨ Core Features
 
-### 代码结构
+-   🚀 **Ultra-fast Resolution**: Fully based on edge computing with extremely low global latency.
+-   **Multi-profile Management**: Supports creating multiple independent configurations, each with a unique endpoint.
+-   🛡️ **Granular Filtering**:
+    -   **Allow/Block Lists**: Supports exact domain and subdomain wildcard matching.
+    -   **Third-party Rule Sets**: Supports subscribing to external blocklists in formats like AdGuard.
+    -   **Custom Redirection**: Supports custom overrides for A, AAAA, TXT, and CNAME records.
+-   📊 **Real-time Stats & Logs**: Visual dashboard recording every request's hit reason, geo-location, and upstream latency.
+-   🔐 **Privacy Enhancement**: Flexible ECS (EDNS Client Subnet) configuration (Forward, Custom, or Hidden).
+-   🌗 **Modern UI**: Dark mode support, high-density management panel built with React + BlueprintJS.
 
+---
+
+## 🛠️ Technical Architecture
+
+### Code Structure
 ```text
 ├── src/
-│   ├── index.ts          # 入口文件，处理 HTTP 路由与中间件
-│   ├── types.ts          # 类型定义
-│   ├── api/              # API 控制器 (Auth, Account, Profiles)
-│   ├── lib/              # 核心逻辑 (RBAC, 规则过滤)
-│   ├── models/           # D1 数据库模型
-│   ├── pipeline/         # DNS 解析流水线 (核心业务逻辑)
-│   └── utils/            # 工具类 (缓存, GeoIP, DNS 编解码, Bloom 过滤器)
-├── web/                  # React/BlueprintJS UI 前端项目
-├── migrations/           # D1 数据库迁移脚本
-└── wrangler.toml         # Cloudflare 部署配置
+│   ├── index.ts          # Entry point, handles HTTP routing & middleware
+│   ├── types.ts          # Type definitions
+│   ├── api/              # API Controllers (Auth, Account, Profiles)
+│   ├── lib/              # Core logic (RBAC, Rule filtering)
+│   ├── models/           # D1 Database models
+│   ├── pipeline/         # DNS Resolution Pipeline (Core business logic)
+│   └── utils/            # Utilities (Cache, GeoIP, DNS Codec, Bloom Filter)
+├── web/                  # React/BlueprintJS UI frontend project
+├── migrations/           # D1 Database migration scripts
+└── wrangler.toml         # Cloudflare deployment configuration
 ```
 
-### 解析流水线 (Resolution Pipeline)
-
-当一个 DNS 请求到达时，它会经过以下处理阶段：
-
-1.  **内存缓存检查**：检查边缘节点内存中是否存在该查询的有效响应。
-2.  **配置加载**：从内存 -> Cache API -> D1 数据库分层加载 Profile 设置。
-3.  **本地规则匹配**：
-    - **白名单**：命中则直接转发上游并返回。
-    - **重定向**：命中则返回自定义记录。
-    - **黑名单**：命中则返回 NXDOMAIN。
-4.  **外部列表过滤**：
-    - 利用 **Bloom Filter** (布隆过滤器) 进行快速初筛。
-    - 结合 **Cache API** 缓存判定结果，减少数据库压力。
-5.  **上游解析**：若以上均未命中，则根据配置请求上游 DoH 服务器，并支持 ECS 处理。
-6.  **异步日志与缓存**：异步记录解析日志、获取目标 GeoIP，并将结果写入各级缓存。
+### Resolution Pipeline
+When a DNS request arrives, it goes through the following processing stages:
+1.  **Memory Cache Check**: Checks if a valid response for the query exists in the edge node's memory.
+2.  **Config Loading**: Layers profile settings loading from Memory -> Cache API -> D1 Database.
+3.  **Local Rule Matching**:
+    -   **Whitelist**: If hit, forwards directly to upstream and returns.
+    -   **Redirection**: If hit, returns custom records.
+    -   **Blacklist**: If hit, returns NXDOMAIN.
+4.  **External List Filtering**:
+    -   Uses **Bloom Filter** for rapid initial screening.
+    -   Combines with **Cache API** to cache verdict results, reducing database pressure.
+5.  **Upstream Resolution**: If none of the above hit, requests the upstream DoH server based on configuration, with optional ECS support.
+6.  **Async Logging & Caching**: Asynchronously records resolution logs, fetches target GeoIP, and writes results to various cache levels.
 
 ---
 
-## 🚀 部署指南
+## 🚀 Deployment Guide
 
-### 开发环境参考
+### Development Environment
+-   **Node.js**: v18.x or later
+-   **Package Manager**: npm
+-   **Cloudflare Account**: Workers and D1 permissions required
 
-- **Node.js**: v18.x 或更高版本
-- **Package Manager**: npm
-- **Cloudflare Account**: 需要开启 Workers 和 D1 权限
-
-### 本地开发
-
-1.  克隆仓库并安装依赖：
+### Local Development
+1.  Clone the repository and install dependencies:
 
 ```bash
 npm install
 ```
 
-2.  初始化 D1 数据库：
+2.  Initialize D1 Database:
 
 ```bash
 npm run db:setup
 npm run db:migrate
 ```
 
-3.  启动开发服务器：
+3.  Start the development server:
 
 ```bash
 npm run dev
 ```
 
-4.  部署上线
+4.  Deploy online
 
 ```bash
 npm run deploy
 ```
 
-### 线上部署 (Cloudflare Dashboard)
-
-1.  **Fork 本项目**：点击页面右上角的 `Fork` 按钮，将仓库克隆到你的 GitHub 账号下。
-2.  **创建 D1 数据库**：登录 Cloudflare 控制台，前往 `Workers & Pages` > `D1`，创建一个新的数据库（例如命名为 `obex_db`），并复制所创建的数据库 ID。
-3.  **配置数据库 ID**：在你的 Fork 仓库中，修改 `wrangler.toml` 文件，将 `database_id` 替换为你刚才创建的数据库 ID。
-4.  **创建 Worker**：前往 Cloudflare 控制台 `Workers & Pages` > `Create application` > `Create Worker`。
-5.  **从 GitHub 导入**：在部署页面选择 `Deploy from GitHub`，关联你 Fork 的项目并完成授权部署。
+### Online Deployment (Cloudflare Dashboard)
+1.  **Fork this repo**: Click the `Fork` button at the top right to clone the repository to your own GitHub account.
+2.  **Create D1 Database**: Log in to the Cloudflare dashboard, go to `Workers & Pages` > `D1`, and create a new database (e.g., named `obex_db`), and copy the created database ID.
+3.  **Configure Database ID**: In your forked repository, edit the `wrangler.toml` file and replace `database_id` with the ID of the database you just created.
+4.  **Create Worker**: Go to Cloudflare dashboard `Workers & Pages` > `Create application` > `Create Worker`.
+5.  **Import from GitHub**: On the deployment page, select `Deploy from GitHub`, connect your forked project, and complete the authorized deployment.
 
 ---
 
-## 📄 开源协议
+## 📄 License
 
-本项目采用 [AGPLv3](LICENSE) 协议授权。
+This project is licensed under the [AGPLv3](LICENSE) License.
