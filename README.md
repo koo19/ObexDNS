@@ -18,6 +18,20 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ObexDNS/ObexDNS)
 
+## 🖼️ Quick Look
+
+| Setup Guide | Real-time Logs |
+|:---:|:---:|
+| ![Setup](docs/screenshots/dns.obex-setup.png) | ![Stats](docs/screenshots/dns.obex-stats.JPG) |
+
+| Rule Management | External Filters |
+|:---:|:---:|
+| ![Rules](docs/screenshots/dns.obex-rules.png) | ![Filters](docs/screenshots/dns.obex-filter.png) |
+
+| Profile Settings | Profile Select |
+|:---:|:---:|
+| ![Settings](docs/screenshots/dns.obex-settings.png) | ![Profile Select](docs/screenshots/dns.obex-profile_select.png) |
+
 ### What is DNS over HTTPS (DoH)?
 DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS connections. Compared to traditional plaintext DNS, DoH can:
 *   **Prevent Hijacking**: Prevents ISPs or third parties from tampering with DNS responses.
