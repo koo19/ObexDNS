@@ -19,6 +19,20 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ObexDNS/ObexDNS)
 
+## 🖼️ 界面预览
+
+| 安装引导 | 实时日志 |
+|:---:|:---:|
+| ![设置引导](docs/screenshots/dns.obex-setup.png) | ![统计分析](docs/screenshots/dns.obex-stats.JPG) |
+
+| 本地规则管理 | 外部拦截列表 |
+|:---:|:---:|
+| ![规则设置](docs/screenshots/dns.obex-rules.png) | ![过滤列表](docs/screenshots/dns.obex-filter.png) |
+
+| 配置选项 | 配置选择 |
+|:---:|:---:|
+| ![高级设置](docs/screenshots/dns.obex-settings.png) | ![配置选择](docs/screenshots/dns.obex-profile_select.png) |
+
 ### 什么是 DNS over HTTPS (DoH)？
 
 DoH (RFC 8484) 是一种通过加密的 HTTPS 连接进行 DNS 查询的协议。与传统明文 DNS 相比，DoH 能够：
