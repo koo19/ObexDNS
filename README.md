@@ -41,9 +41,17 @@ DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS conn
 |:---:|:---:|
 | ![Rules](docs/screenshots/dns.obex-rules.png) | ![Filters](docs/screenshots/dns.obex-filter.png) |
 
+| Resolution Logs | Log Detail |
+|:---:|:---:|
+| ![Resolution Logs](docs/screenshots/dns.obex-log.jpeg) | ![Log Detail](docs/screenshots/dns.obex-log_detail.jpeg) |
+
 | Profile Settings | Profile Select |
 |:---:|:---:|
 | ![Settings](docs/screenshots/dns.obex-settings.png) | ![Profile Select](docs/screenshots/dns.obex-profile_select.png) |
+
+| Mobile Logs | Mobile Stats |
+|:---:|:---:|
+| ![Mobile Logs](docs/screenshots/dns.obex-mobile_log.png) | ![Mobile Stats](docs/screenshots/dns.obex-mobile_stats.jpg) |
 
 ---
 
