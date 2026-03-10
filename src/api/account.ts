@@ -128,7 +128,11 @@ export async function handleAccountRequest(request: Request, env: Env, user: Use
         const targetId = pathParts[3];
         if (targetId === user.id) return new Response("不能删除自己", { status: 400 });
         
+        // 1. 先删除该用户的所有 Profile (级联清理日志和规则)
+        await env.DB.prepare("DELETE FROM profiles WHERE owner_id = ?").bind(targetId).run();
+        // 2. 再删除用户本人
         await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(targetId).run();
+        
         return new Response(null, { status: 204 });
       }
     }
