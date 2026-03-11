@@ -6,7 +6,7 @@ export interface ExecutionContext {
 }
 
 export interface ProfileSettings {
-  upstream: string[]; // DoH URLs
+  upstream: string[];
   ecs: {
     enabled: boolean;
     use_client_ip: boolean;
@@ -15,6 +15,9 @@ export interface ProfileSettings {
   };
   log_retention_days: number;
   default_policy: 'ALLOW' | 'BLOCK';
+  block_mode?: 'NULL_IP' | 'NXDOMAIN' | 'NODATA' | 'CUSTOM_IP';
+  custom_block_ipv4?: string;
+  custom_block_ipv6?: string;
 }
 
 export interface Profile {

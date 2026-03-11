@@ -1,7 +1,7 @@
 import { Context, DNSQuery, ResolutionResult, ProfileSettings } from "../types";
 import { LogModel } from "../models/log";
 import { fetchGeoIP } from "../utils/geoip";
-import { parseDNSAnswer } from "../utils/dns";
+import { buildResponse, parseDNSAnswer } from "../utils/dns";
 import { dnsCache } from "./cache";
 
 export const pipelineResolver = {
@@ -102,19 +102,41 @@ export const pipelineResolver = {
     }
   },
 
-  async block(request: Request, query: DNSQuery, context: Context, action: 'BLOCK' | 'REDIRECT', reason: string, customAnswer?: string): Promise<ResolutionResult> {
+  async block(request: Request, query: DNSQuery, context: Context, settings: ProfileSettings, action: 'BLOCK' | 'REDIRECT', reason: string, customAnswer?: string): Promise<ResolutionResult> {
     const logModel = new LogModel(context.env.DB);
     const clientIp = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
-    const answer = new Uint8Array(query.raw);
+    let answer: Uint8Array;
+    let displayAnswer = customAnswer || "";
 
-    // 如果是 BLOCK，RCODE=3 (NXDOMAIN)
-    if (action === 'BLOCK') {
-      answer[2] = (answer[2] | 0x80); // QR = 1
-      answer[3] = 0x83; // RA=1, RCODE=3
-      answer[6] = 0;
-      answer[7] = 0;
-      answer[8] = 0; answer[9] = 0; // NSCOUNT = 0
-      answer[10] = 0; answer[11] = 0; // ARCOUNT = 0
+    if (action === 'REDIRECT' && customAnswer) {
+      answer = buildResponse(query.raw, query.type, customAnswer);
+    } else {
+      // 处理拦截逻辑 (BLOCK)
+      const mode = settings.block_mode || 'NULL_IP';
+      
+      if (mode === 'NXDOMAIN') {
+        answer = new Uint8Array(query.raw);
+        answer[2] |= 0x80; // QR=1
+        answer[3] = 0x83; // RA=1, RCODE=3 (NXDOMAIN)
+        // 确保 ANCOUNT 为 0
+        answer[6] = 0; answer[7] = 0;
+        displayAnswer = "NXDOMAIN";
+      } else if (mode === 'NODATA') {
+        answer = new Uint8Array(query.raw);
+        answer[2] |= 0x80; // QR=1
+        answer[3] = 0x80; // RA=1, RCODE=0 (NOERROR)
+        answer[6] = 0; answer[7] = 0;
+        displayAnswer = "NODATA";
+      } else if (mode === 'CUSTOM_IP') {
+        const customIp = query.type === 'AAAA' ? (settings.custom_block_ipv6 || "::") : (settings.custom_block_ipv4 || "0.0.0.0");
+        answer = buildResponse(query.raw, query.type, customIp);
+        displayAnswer = customIp;
+      } else {
+        // 默认: NULL_IP (0.0.0.0 或 ::)
+        const nullIp = query.type === 'AAAA' ? "::" : "0.0.0.0";
+        answer = buildResponse(query.raw, query.type, nullIp);
+        displayAnswer = nullIp;
+      }
     }
 
     const latency = Date.now() - context.startTime;
@@ -127,7 +149,7 @@ export const pipelineResolver = {
       record_type: query.type,
       action,
       reason,
-      answer: customAnswer || (action === 'BLOCK' ? "NXDOMAIN" : "REDIRECT"),
+      answer: displayAnswer,
       latency
     }));
 

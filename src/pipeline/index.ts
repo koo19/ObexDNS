@@ -35,7 +35,7 @@ export const pipeline = {
 
     // 4. 默认策略 & 最终解析
     if (config.settings.default_policy === 'BLOCK') {
-      const block = await pipelineResolver.block(request, query, context, "BLOCK", "Default Policy");
+      const block = await pipelineResolver.block(request, query, context, config.settings, "BLOCK", "Default Policy");
       return { ...block, timings: { ...timings, ...block.timings } };
     }
 
