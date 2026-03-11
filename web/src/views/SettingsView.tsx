@@ -40,6 +40,9 @@ interface ProfileSettings {
   };
   log_retention_days: number;
   default_policy: "ALLOW" | "BLOCK";
+  block_mode?: "NULL_IP" | "NXDOMAIN" | "NODATA" | "CUSTOM_IP";
+  custom_block_ipv4?: string;
+  custom_block_ipv6?: string;
 }
 
 interface Profile {
@@ -289,7 +292,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </p>
         </Card>
 
-        {/* 默认策略 */}
+        {/* 默认策略与拦截响应模式 */}
         <Card
           elevation={Elevation.ONE}
           className="dark:bg-gray-900 dark:border-gray-800"
@@ -297,25 +300,69 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <H5 className="flex items-center gap-2 mb-4 font-bold">
             <Shield size={18} className="text-green-500" /> {t("settings.defaultPolicyTitle")}
           </H5>
-          <FormGroup label={t("settings.onNoMatch")}>
-            <HTMLSelect
-              fill
-              value={settings.default_policy}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  default_policy: e.target.value as any,
-                })
-              }
+          <div className="space-y-4">
+            <FormGroup label={t("settings.onNoMatch")}>
+              <HTMLSelect
+                fill
+                value={settings.default_policy}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    default_policy: e.target.value as any,
+                  })
+                }
+              >
+                <option value="ALLOW">
+                  {t("settings.allowAll")}
+                </option>
+                <option value="BLOCK">
+                  {t("settings.blockAll")}
+                </option>
+              </HTMLSelect>
+            </FormGroup>
+
+            <Divider />
+
+            <FormGroup 
+              label={t("settings.blockModeTitle", "拦截响应模式")}
+              helperText={t("settings.blockModeDesc", "当域名被拦截时返回的内容")}
             >
-              <option value="ALLOW">
-                {t("settings.allowAll")}
-              </option>
-              <option value="BLOCK">
-                {t("settings.blockAll")}
-              </option>
-            </HTMLSelect>
-          </FormGroup>
+              <HTMLSelect
+                fill
+                value={settings.block_mode || "NULL_IP"}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    block_mode: e.target.value as any,
+                  })
+                }
+              >
+                <option value="NULL_IP">0.0.0.0 / :: (默认)</option>
+                <option value="NXDOMAIN">NXDOMAIN (域名不存在)</option>
+                <option value="NODATA">NODATA (空回答)</option>
+                <option value="CUSTOM_IP">自定义 IP</option>
+              </HTMLSelect>
+            </FormGroup>
+
+            {settings.block_mode === "CUSTOM_IP" && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                <InputGroup
+                  placeholder="IPv4: 127.0.0.1"
+                  value={settings.custom_block_ipv4 || ""}
+                  onChange={(e) =>
+                    setSettings({ ...settings, custom_block_ipv4: e.target.value })
+                  }
+                />
+                <InputGroup
+                  placeholder="IPv6: ::1"
+                  value={settings.custom_block_ipv6 || ""}
+                  onChange={(e) =>
+                    setSettings({ ...settings, custom_block_ipv6: e.target.value })
+                  }
+                />
+              </div>
+            )}
+          </div>
         </Card>
 
         {/* 隐私与日志 */}

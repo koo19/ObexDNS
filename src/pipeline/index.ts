@@ -20,9 +20,24 @@ export const pipeline = {
     }
 
     const cached = dnsCache.get(`${context.profileId}:${query.name}:${query.type}`);
-    if (cached && Date.now() < cached.expiresAt) {
-      const patched = new Uint8Array(cached.answer); patched[0] = query.raw[0]; patched[1] = query.raw[1];
-      return { answer: patched, ttl: Math.ceil((cached.expiresAt - Date.now()) / 1000), action: cached.action, reason: cached.reason, latency: Date.now() - context.startTime, timings: { dns_cache_mem: Date.now() - context.startTime } };
+    if (cached && Date.now() < cached.expiresAt && cached.answer instanceof Uint8Array) {
+      // 这里的 cached.answer 已经是完整的 DNS 报文
+      // 关键：DNS ID 必须匹配原始查询。ID 位于报文的前 2 字节。
+      const response = new Uint8Array(cached.answer);
+      if (response.length >= 2 && query.raw.length >= 2) {
+        response[0] = query.raw[0];
+        response[1] = query.raw[1];
+      }
+      
+      const latency = Date.now() - context.startTime;
+      return {
+        answer: response,
+        ttl: Math.ceil((cached.expiresAt - Date.now()) / 1000),
+        action: cached.action,
+        reason: cached.reason,
+        latency,
+        timings: { dns_cache_mem: latency }
+      };
     }
 
     // 2. 加载配置
@@ -35,7 +50,7 @@ export const pipeline = {
 
     // 4. 默认策略 & 最终解析
     if (config.settings.default_policy === 'BLOCK') {
-      const block = await pipelineResolver.block(request, query, context, "BLOCK", "Default Policy");
+      const block = await pipelineResolver.block(request, query, context, config.settings, "BLOCK", "Default Policy");
       return { ...block, timings: { ...timings, ...block.timings } };
     }
 

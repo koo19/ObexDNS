@@ -131,7 +131,7 @@
     "labelBlock": "拦截",
     "labelAllow": "放行",
     "labelRedirect": "重定向",
-    "detailBlock": "解析至 NXDOMAIN",
+    "detailBlock": "解析至",
     "detailAllow": "转发至上游服务"
   },
   "analytics": {
@@ -210,7 +210,7 @@
     "addSubscription": "添加订阅",
     "supportedFormats": "支持的列表格式：",
     "formatAdGuard": "兼容 ||domain.com^ 等过滤规则。",
-    "formatHosts": "兼容标准 hosts 文件 (例如 127.0.0.1 domain.com)。",
+    "formatHosts": "兼容标准 hosts 文件 (例如 0.0.0.0 domain.com)。",
     "noListsTitle": "尚未添加列表",
     "noListsDesc": "您还没有订阅任何外部拦截列表。",
     "tableUrl": "列表 URL",

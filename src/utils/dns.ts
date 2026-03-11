@@ -11,13 +11,16 @@ function decodeName(buffer: Uint8Array, offset: number): { name: string; read: n
   let iterations = 0;
 
   while (iterations < 128) {
+    if (curr >= buffer.length) break; // 边界检查
     const len = buffer[curr];
+    
     if (len === 0) {
       if (!jumped) consumed++;
       break;
     }
 
     if ((len & 0xc0) === 0xc0) {
+      if (curr + 1 >= buffer.length) break; // 指针字节不足
       const pointer = ((len & 0x3f) << 8) | buffer[curr + 1];
       if (!jumped) {
         consumed += 2;
@@ -29,6 +32,9 @@ function decodeName(buffer: Uint8Array, offset: number): { name: string; read: n
     }
 
     if (name.length > 0) name += ".";
+    // 检查标签内容是否超出范围
+    if (curr + 1 + len > buffer.length) break;
+    
     for (let i = 0; i < len; i++) {
       name += String.fromCharCode(buffer[curr + 1 + i]);
     }
@@ -41,30 +47,38 @@ function decodeName(buffer: Uint8Array, offset: number): { name: string; read: n
 }
 
 export async function parseDNSQuery(request: Request): Promise<DNSQuery | null> {
-  let raw: Uint8Array;
-
-  if (request.method === "GET") {
-    const url = new URL(request.url);
-    const dnsParam = url.searchParams.get("dns");
-    if (!dnsParam) return null;
-
-    const base64 = dnsParam.replace(/-/g, "+").replace(/_/g, "/");
-    const binary = atob(base64);
-    raw = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      raw[i] = binary.charCodeAt(i);
-    }
-  } else if (request.method === "POST") {
-    const buffer = await request.arrayBuffer();
-    raw = new Uint8Array(buffer);
-  } else {
-    return null;
-  }
-
   try {
-    // 使用新的 decodeName 替代旧的解析函数
+    let raw: Uint8Array;
+
+    if (request.method === "GET") {
+      const url = new URL(request.url);
+      const dnsParam = url.searchParams.get("dns");
+      if (!dnsParam) return null;
+
+      let base64 = dnsParam.replace(/-/g, "+").replace(/_/g, "/");
+      while (base64.length % 4) base64 += '=';
+      
+      const binary = atob(base64);
+      raw = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        raw[i] = binary.charCodeAt(i);
+      }
+    } else if (request.method === "POST") {
+      const buffer = await request.arrayBuffer();
+      raw = new Uint8Array(buffer);
+    } else {
+      return null;
+    }
+
+    // 基础长度检查：Header(12) + QTYPE(2) + QCLASS(2) = 16
+    if (raw.length < 16) return null;
+
     const { name, read } = decodeName(raw, 12);
     const qtypeOffset = 12 + read;
+    
+    // 再次检查剩余长度
+    if (qtypeOffset + 4 > raw.length) return null;
+    
     const qtypeCode = (raw[qtypeOffset] << 8) | raw[qtypeOffset + 1];
     
     return {
@@ -192,46 +206,91 @@ export function parseDNSAnswer(raw: Uint8Array): { type: string; data: string; t
   return results;
 }
 
-export function buildResponse(queryRaw: Uint8Array, type: string, value: string, ttl: number = 60): Uint8Array {
-  let data: number[] = [];
-  if (type === 'A') {
-    data = value.split('.').map(v => parseInt(v));
-  } else if (type === 'AAAA') {
-    const parts = value.split(':');
-    for (const part of parts) {
-      const v = parseInt(part, 16);
-      data.push(v >> 8);
-      data.push(v & 0xff);
+export function buildResponse(queryRaw: Uint8Array, type: string, value: string, ttl: number = 60, rcode: number = 0): Uint8Array {
+  try {
+    if (!queryRaw || queryRaw.length < 12) {
+      // 极端情况：包太短，返回一个最简错误包
+      const err = new Uint8Array(12);
+      err[2] = 0x81; err[3] = 0x82; // Server Failure
+      return err;
     }
-  } else if (type === 'CNAME') {
-    const labels = value.split('.');
-    for (const label of labels) {
-      data.push(label.length);
-      for (let i = 0; i < label.length; i++) data.push(label.charCodeAt(i));
-    }
-    data.push(0);
-  } else if (type === 'TXT') {
-    data.push(value.length);
-    for (let i = 0; i < value.length; i++) data.push(value.charCodeAt(i));
-  }
 
-  const response = new Uint8Array(queryRaw.length + 10 + data.length);
-  response.set(queryRaw);
-  
-  response[2] = 0x85; response[3] = 0x80;
-  response[6] = 0x00; response[7] = 0x01;
-  
-  let offset = queryRaw.length;
-  response[offset++] = 0xc0; response[offset++] = 0x0c;
-  
-  const typeMap: Record<string, number> = { "A": 1, "AAAA": 28, "CNAME": 5, "TXT": 16 };
-  const typeCode = typeMap[type] || 1;
-  response[offset++] = typeCode >> 8; response[offset++] = typeCode & 0xff;
-  response[offset++] = 0x00; response[offset++] = 0x01;
-  response[offset++] = (ttl >> 24) & 0xff; response[offset++] = (ttl >> 16) & 0xff;
-  response[offset++] = (ttl >> 8) & 0xff; response[offset++] = ttl & 0xff;
-  response[offset++] = data.length >> 8; response[offset++] = data.length & 0xff;
-  for (const b of data) response[offset++] = b;
-  
-  return response.slice(0, offset);
+    // 1. 准备 Header (12 字节)
+    const header = new Uint8Array(12);
+    header.set(queryRaw.slice(0, 12));
+    header[2] = (header[2] & 0x01) | 0x84; // QR=1, AA=1, 继承 RD
+    header[3] = 0x80 | (rcode & 0x0F);    // RA=1, RCODE
+    
+    // 2. 提取 Question Section (紧跟 Header 之后)
+    let qEnd = 12;
+    const qCount = (queryRaw[4] << 8) | queryRaw[5];
+    for (let i = 0; i < qCount; i++) {
+      const { read } = decodeName(queryRaw, qEnd);
+      if (read === 0 && qEnd < queryRaw.length) {
+        qEnd++; // 安全步进
+      } else {
+        qEnd += read + 4;
+      }
+      if (qEnd > queryRaw.length) { qEnd = queryRaw.length; break; }
+    }
+    const questionSection = queryRaw.slice(12, qEnd);
+    
+    header[4] = (qCount >> 8) & 0xff; header[5] = qCount & 0xff; // 保持原始问题数
+    header[6] = 0; header[7] = value ? 1 : 0; // ANCOUNT
+    header[8] = 0; header[9] = 0;             // NSCOUNT
+    header[10] = 0; header[11] = 0;           // ARCOUNT (丢弃额外的附加记录)
+
+    if (!value) {
+      const res = new Uint8Array(12 + questionSection.length);
+      res.set(header);
+      res.set(questionSection, 12);
+      return res;
+    }
+
+    // 3. 准备 Answer 内容
+    let data: number[] = [];
+    if (type === 'A') {
+      data = value.split('.').map(v => parseInt(v) || 0);
+    } else if (type === 'AAAA') {
+      const parts = value.split(':');
+      for (const part of parts) {
+        const v = parseInt(part || "0", 16);
+        data.push((v >> 8) & 0xff);
+        data.push(v & 0xff);
+      }
+    } else if (type === 'CNAME') {
+      const labels = value.split('.');
+      for (const label of labels) {
+        data.push(label.length);
+        for (let i = 0; i < label.length; i++) data.push(label.charCodeAt(i));
+      }
+      data.push(0);
+    } else if (type === 'TXT') {
+      const safeVal = value.substring(0, 255);
+      data.push(safeVal.length);
+      for (let i = 0; i < safeVal.length; i++) data.push(safeVal.charCodeAt(i));
+    }
+
+    const answerRR = new Uint8Array(10 + data.length);
+    answerRR[0] = 0xc0; answerRR[1] = 0x0c; // 压缩指针指向第一个问题
+    const typeMap: Record<string, number> = { "A": 1, "AAAA": 28, "CNAME": 5, "TXT": 16 };
+    const tCode = typeMap[type] || 1;
+    answerRR[2] = (tCode >> 8); answerRR[3] = tCode & 0xff;
+    answerRR[4] = 0; answerRR[5] = 1; // Class IN
+    answerRR[6] = (ttl >> 24) & 0xff; answerRR[7] = (ttl >> 16) & 0xff;
+    answerRR[8] = (ttl >> 8) & 0xff; answerRR[9] = ttl & 0xff;
+    answerRR.set(data, 10);
+
+    const res = new Uint8Array(12 + questionSection.length + answerRR.length);
+    res.set(header);
+    res.set(questionSection, 12);
+    res.set(answerRR, 12 + questionSection.length);
+    return res;
+  } catch (e) {
+    console.error("Critical error in buildResponse:", e);
+    const fallback = new Uint8Array(12);
+    fallback.set(queryRaw.slice(0, 12));
+    fallback[2] |= 0x80; fallback[3] = (fallback[3] & 0xF0) | 0x02; // ServFail
+    return fallback;
+  }
 }

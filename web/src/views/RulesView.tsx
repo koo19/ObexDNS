@@ -41,12 +41,19 @@ interface RulesViewProps {
   onPrefillUsed?: () => void;
 }
 
+interface ProfileSettings {
+  block_mode?: "NULL_IP" | "NXDOMAIN" | "NODATA" | "CUSTOM_IP";
+  custom_block_ipv4?: string;
+  custom_block_ipv6?: string;
+}
+
 export const RulesView: React.FC<RulesViewProps> = ({
   profileId,
   prefill,
   onPrefillUsed,
 }) => {
   const [rules, setRules] = useState<Rule[]>([]);
+  const [settings, setSettings] = useState<ProfileSettings | null>(null);
   const [, setLoading] = useState(true);
   const { t } = useTranslation();
   const [newRule, setNewRule] = useState<{
@@ -81,10 +88,33 @@ export const RulesView: React.FC<RulesViewProps> = ({
 
   const fetchRules = async () => {
     setLoading(true);
-    const res = await fetch(`/api/profiles/${profileId}/rules`);
-    const data = await res.json();
-    setRules(data);
-    setLoading(false);
+    try {
+      const [rulesRes, profileRes] = await Promise.all([
+        fetch(`/api/profiles/${profileId}/rules`),
+        fetch(`/api/profiles/${profileId}`)
+      ]);
+      
+      if (rulesRes.ok) setRules(await rulesRes.json());
+      if (profileRes.ok) {
+        const profile = await profileRes.json();
+        setSettings(JSON.parse(profile.settings));
+      }
+    } catch (e) {
+      console.error("Failed to fetch data", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getBlockDetail = () => {
+    if (!settings) return t("rules.detailBlock");
+    const mode = settings.block_mode || "NULL_IP";
+    switch (mode) {
+      case "NXDOMAIN": return "NXDOMAIN";
+      case "NODATA": return "NODATA";
+      case "CUSTOM_IP": return `${settings.custom_block_ipv4 || "0.0.0.0"} / ${settings.custom_block_ipv6 || "::"}`;
+      default: return "0.0.0.0 / ::";
+    }
   };
 
   const addRule = async () => {
@@ -309,11 +339,18 @@ export const RulesView: React.FC<RulesViewProps> = ({
                         </Tag>
                       )}
                     </div>
+                  ) : rule.type === "BLOCK" ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400 text-xs italic">
+                        {t("rules.detailBlock")}
+                      </span>
+                      <Tag minimal round className="text-[9px] px-1.5 opacity-70">
+                        {getBlockDetail()}
+                      </Tag>
+                    </div>
                   ) : (
                     <span className="text-gray-400 text-xs italic">
-                      {rule.type === "BLOCK"
-                        ? t("rules.detailBlock")
-                        : t("rules.detailAllow")}
+                      {t("rules.detailAllow")}
                     </span>
                   )}
                 </td>
