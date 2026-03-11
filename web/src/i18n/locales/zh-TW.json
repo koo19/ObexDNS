@@ -131,7 +131,7 @@
     "labelBlock": "封鎖",
     "labelAllow": "允許",
     "labelRedirect": "重新導向",
-    "detailBlock": "解析至 NXDOMAIN",
+    "detailBlock": "解析至",
     "detailAllow": "轉發至上游服務"
   },
   "analytics": {
@@ -210,7 +210,7 @@
     "addSubscription": "新增訂閱",
     "supportedFormats": "支援的清單格式：",
     "formatAdGuard": "相容 ||domain.com^ 等過濾規則。",
-    "formatHosts": "相容標準 hosts 檔案 (例如 127.0.0.1 domain.com)。",
+    "formatHosts": "相容標準 hosts 檔案 (例如 0.0.0.0 domain.com)。",
     "noListsTitle": "尚未新增清單",
     "noListsDesc": "您還沒有訂閱任何外部封鎖清單。",
     "tableUrl": "清單 URL",

@@ -14,11 +14,11 @@ export default defineConfig({
     host: '127.0.0.1',
     proxy: {
       '/api': {
-        target: 'http://localhost:8787',
+        target: 'http://127.0.0.1:8787',
         changeOrigin: true,
       },
       '^/[a-zA-Z0-9]{6}$': {
-        target: 'http://localhost:8787',
+        target: 'http://127.0.0.1:8787',
         changeOrigin: true,
       }
     }
@@ -41,6 +41,12 @@ export default defineConfig({
             }
             if (id.includes('react') || id.includes('scheduler')) {
               return 'vendor-react';
+            }
+            if (id.includes('recharts')) {
+              return 'vendor-recharts';
+            }
+            if (id.includes('i18next')) {
+              return 'vendor-i18next';
             }
             return 'vendor-utils';
           }
