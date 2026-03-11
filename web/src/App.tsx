@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import {
   Button,
   Navbar,
@@ -45,17 +45,18 @@ import {
   useParams,
   Navigate,
 } from "react-router-dom";
-import { AuthView } from "./components/AuthView";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { GitHubCorner } from "./components/GithubCorner";
-import { FilteringView } from "./views/FilteringView";
-import { AccountView } from "./views/AccountView";
-import { SettingsView } from "./views/SettingsView";
-import { RulesView } from "./views/RulesView";
-import { LogsView } from "./views/LogsView";
-import { AnalyticsView } from "./views/AnalyticsView";
-import { SetupView } from "./views/SetupView";
 import LogoIcon from "./assets/Obex_DNS_Logo-256.png";
+
+const FilteringView = lazy(() => import("./views/FilteringView").then(m => ({ default: m.FilteringView })));
+const AccountView = lazy(() => import("./views/AccountView").then(m => ({ default: m.AccountView })));
+const SettingsView = lazy(() => import("./views/SettingsView").then(m => ({ default: m.SettingsView })));
+const RulesView = lazy(() => import("./views/RulesView").then(m => ({ default: m.RulesView })));
+const LogsView = lazy(() => import("./views/LogsView").then(m => ({ default: m.LogsView })));
+const AnalyticsView = lazy(() => import("./views/AnalyticsView").then(m => ({ default: m.AnalyticsView })));
+const SetupView = lazy(() => import("./views/SetupView").then(m => ({ default: m.SetupView })));
+const AuthView = lazy(() => import("./components/AuthView").then(m => ({ default: m.AuthView })));
 
 interface Profile {
   id: string;
@@ -635,14 +636,14 @@ function App() {
     );
   if (!isLoggedIn)
     return (
-      <>
+      <Suspense fallback={<div className="h-screen flex items-center justify-center"><Spinner size={50} /></div>}>
         <GitHubCorner />
         <AuthView onSuccess={checkAuthAndFetchData} />
-      </>
+      </Suspense>
     );
 
   return (
-    <>
+    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Spinner size={50} /></div>}>
       <GitHubCorner />
       <Routes>
         <Route path="/" element={<Navigate to="/dash" replace />} />
@@ -717,7 +718,7 @@ function App() {
         />
         <Route path="*" element={<NotFoundView />} />
       </Routes>
-    </>
+    </Suspense>
   );
 }
 
