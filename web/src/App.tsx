@@ -355,6 +355,7 @@ const MainLayout = ({
                 onClick={() => navigate("/account")}
               />
               <Popover
+                className="w-full"
                 position="right-bottom"
                 content={
                   <div className="p-4 space-y-3">
