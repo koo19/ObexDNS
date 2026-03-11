@@ -131,7 +131,7 @@
     "labelBlock": "Block",
     "labelAllow": "Allow",
     "labelRedirect": "Redirect",
-    "detailBlock": "Resolve to NXDOMAIN",
+    "detailBlock": "Resolve to",
     "detailAllow": "Forward to Upstream"
   },
   "analytics": {
@@ -210,7 +210,7 @@
     "addSubscription": "Add Subscription",
     "supportedFormats": "Supported list formats:",
     "formatAdGuard": "AdGuard / uBlock: compatible with ||domain.com^ filters.",
-    "formatHosts": "Hosts format: compatible with standard hosts files (e.g., 127.0.0.1 domain.com).",
+    "formatHosts": "Hosts format: compatible with standard hosts files (e.g., 0.0.0.0 domain.com).",
     "noListsTitle": "No lists added yet",
     "noListsDesc": "You haven't subscribed to any external filter lists yet.",
     "tableUrl": "List URL",
