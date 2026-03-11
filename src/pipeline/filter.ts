@@ -36,9 +36,8 @@ export const pipelineFilter = {
 
       if (val) {
         track('local_rules');
-        const answer = buildResponse(query.raw, query.type, val);
-        const result = await pipelineResolver.block(request, query, context, "REDIRECT", `Rule: ${redirectRule.pattern}`, val);
-        return { ...result, answer };
+        const result = await pipelineResolver.block(request, query, context, settings, "REDIRECT", `Rule: ${redirectRule.pattern}`, val);
+        return result;
       }
     }
 
@@ -47,7 +46,7 @@ export const pipelineFilter = {
     const blockRule = DNSFilter.findMatch(query.name, blacklist);
     if (blockRule) {
       track('local_rules');
-      return pipelineResolver.block(request, query, context, "BLOCK", `Blacklist: ${blockRule.pattern}`);
+      return pipelineResolver.block(request, query, context, settings, "BLOCK", `Blacklist: ${blockRule.pattern}`);
     }
     track('local_rules');
 
@@ -60,7 +59,7 @@ export const pipelineFilter = {
       
       if (cachedVerdict === 'BLOCK') {
         track('verdict_cache_hit');
-        return pipelineResolver.block(request, query, context, "BLOCK", "External List (Cached)");
+        return pipelineResolver.block(request, query, context, settings, "BLOCK", "External List (Cached)");
       } else if (cachedVerdict !== 'PASS') {
         const entry = await context.env.DB.prepare("SELECT domain FROM list_entries WHERE profile_id = ? AND domain = ?")
           .bind(context.profileId, domainLower).first();
@@ -68,7 +67,7 @@ export const pipelineFilter = {
         if (entry) {
           context.ctx.waitUntil(cacheUtils.set(cache, verdictCacheKey, 'BLOCK', 3600));
           track('db_list_lookup');
-          return pipelineResolver.block(request, query, context, "BLOCK", "External List");
+          return pipelineResolver.block(request, query, context, settings, "BLOCK", "External List");
         } else {
           context.ctx.waitUntil(cacheUtils.set(cache, verdictCacheKey, 'PASS', 3600));
           track('db_list_lookup');
