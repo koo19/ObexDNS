@@ -276,7 +276,13 @@
     "retention30d": "30 天 (默认)",
     "retention180d": "180 天",
     "retention360d": "360 天",
-    "retention720d": "720 天 (最大)"
+    "retention720d": "720 天 (最大)",
+    "blockModeTitle": "拦截响应模式",
+    "blockModeDesc": "当域名被拦截时返回的内容",
+    "default": "默认",
+    "NXDOMAIN": "域名不存在",
+    "NODATA": "空回答",
+    "customIP": "自定义 IP"
   },
   "account": {
     "title": "账号设置",

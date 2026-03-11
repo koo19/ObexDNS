@@ -324,8 +324,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <Divider />
 
             <FormGroup 
-              label={t("settings.blockModeTitle", "拦截响应模式")}
-              helperText={t("settings.blockModeDesc", "当域名被拦截时返回的内容")}
+              label={t("settings.blockModeTitle")}
+              helperText={t("settings.blockModeDesc")}
             >
               <HTMLSelect
                 fill
@@ -337,10 +337,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   })
                 }
               >
-                <option value="NULL_IP">0.0.0.0 / :: (默认)</option>
-                <option value="NXDOMAIN">NXDOMAIN (域名不存在)</option>
-                <option value="NODATA">NODATA (空回答)</option>
-                <option value="CUSTOM_IP">自定义 IP</option>
+                <option value="NULL_IP">0.0.0.0 / :: ({t("settings.default")})</option>
+                <option value="NXDOMAIN">NXDOMAIN ({t("settings.NXDOMAIN")})</option>
+                <option value="NODATA">NODATA ({t("settings.NODATA")})</option>
+                <option value="CUSTOM_IP">{t("settings.customIP")}</option>
               </HTMLSelect>
             </FormGroup>
 

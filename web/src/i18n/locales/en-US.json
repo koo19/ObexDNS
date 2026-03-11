@@ -276,7 +276,13 @@
     "retention30d": "30 Days (Default)",
     "retention180d": "180 Days",
     "retention360d": "360 Days",
-    "retention720d": "720 Days (Max)"
+    "retention720d": "720 Days (Max)",
+    "blockModeTitle": "Block Response Mode",
+    "blockModeDesc": "What to return when a domain is blocked",
+    "default": "Default",
+    "NXDOMAIN": "NXDOMAIN",
+    "NODATA": "NODATA",
+    "customIP": "Custom IP"
   },
   "account": {
     "title": "Account Settings",

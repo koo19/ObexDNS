@@ -276,7 +276,13 @@
     "retention30d": "30 天 (預設)",
     "retention180d": "180 天",
     "retention360d": "360 天",
-    "retention720d": "720 天 (最大)"
+    "retention720d": "720 天 (最大)",
+    "blockModeTitle": "拦截响应模式",
+    "blockModeDesc": "當網域被封鎖時返回的內容",
+    "default": "預設",
+    "NXDOMAIN": "查無此名",
+    "NODATA": "空回答",
+    "customIP": "自訂 IP"
   },
   "account": {
     "title": "帳號設定",
