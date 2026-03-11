@@ -21,19 +21,19 @@ export const getPresetRegions = (t: TFunction): Record<string, RegionConfigItem>
   // 定义已知地区的元数据 (Label 和关联国家)
   const regionMeta: Record<string, { label: string; countries: string[] }> = {
     APAC: {
-      label: t("common.apac") + " (" + t("common.HongKong") + "/" + t("common.Singapore") + "/" + t("common.Tokyo") + ")",
+      label: t("common.apac", "Asia Pacific") + " (" + t("common.HongKong") + "/" + t("common.Singapore") + "/" + t("common.Tokyo") + ")",
       countries: ["HK", "SG", "JP", "CN", "TW", "KR", "MY", "TH"],
     },
     NAE: {
-      label: t("common.nae") || "North America East",
+      label: t("common.nae", "North America East"),
       countries: ["US", "CA"],
     },
     NAW: {
-      label: t("common.naw") || "North America West",
+      label: t("common.naw", "North America West"),
       countries: ["US", "CA"],
     },
     EU: {
-      label: t("common.eu") || "Europe",
+      label: t("common.eu", "Europe"),
       countries: ["GB", "FR", "DE", "NL", "IT", "ES"],
     }
   };
