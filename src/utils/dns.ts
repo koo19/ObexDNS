@@ -193,6 +193,11 @@ export function parseDNSAnswer(raw: Uint8Array): { type: string; data: string; t
 }
 
 export function buildResponse(queryRaw: Uint8Array, type: string, value: string, ttl: number = 60, rcode: number = 0): Uint8Array {
+  // 防御性检查：确保输入包至少有 Header
+  if (!queryRaw || queryRaw.length < 12) {
+    throw new Error("Invalid DNS Query: Package too short");
+  }
+
   const header = new Uint8Array(12);
   header.set(queryRaw.slice(0, 12));
   
@@ -201,15 +206,24 @@ export function buildResponse(queryRaw: Uint8Array, type: string, value: string,
   // RA=1 (Recursion Available), Z=0, RCODE
   header[3] = 0x80 | (rcode & 0x0F);
   
-  // 准确计算 Question Section 结束位置，以跳过可能的附加记录 (如 OPT)
-  let offset = 12;
-  const qCount = (queryRaw[4] << 8) | queryRaw[5];
-  for (let i = 0; i < qCount; i++) {
-    const { read } = decodeName(queryRaw, offset);
-    offset += read + 4; // Name + Type(2) + Class(2)
+  let questionSection: Uint8Array;
+  try {
+    // 准确计算 Question Section 结束位置，以跳过可能的附加记录 (如 OPT)
+    let offset = 12;
+    const qCount = (queryRaw[4] << 8) | queryRaw[5];
+    for (let i = 0; i < qCount; i++) {
+      if (offset >= queryRaw.length) break;
+      const { read } = decodeName(queryRaw, offset);
+      offset += read + 4; // Name + Type(2) + Class(2)
+    }
+    const end = Math.min(offset, queryRaw.length);
+    questionSection = queryRaw.slice(12, end);
+  } catch (e) {
+    console.error("Failed to extract Question Section, falling back to empty:", e);
+    questionSection = new Uint8Array(0);
+    header[4] = 0; header[5] = 0; // 如果提取失败，强制 QDCOUNT = 0
   }
   
-  const questionSection = queryRaw.slice(12, offset);
   header[6] = 0; header[7] = value ? 1 : 0; // ANCOUNT
   header[8] = 0; header[9] = 0;             // NSCOUNT
   header[10] = 0; header[11] = 0;           // ARCOUNT (丢弃 OPT 记录)
@@ -224,25 +238,36 @@ export function buildResponse(queryRaw: Uint8Array, type: string, value: string,
 
   // 构造 Answer Section
   let data: number[] = [];
-  if (type === 'A') {
-    data = value.split('.').map(v => parseInt(v));
-  } else if (type === 'AAAA') {
-    const parts = value.split(':');
-    for (const part of parts) {
-      const v = parseInt(part || "0", 16);
-      data.push(v >> 8);
-      data.push(v & 0xff);
+  try {
+    if (type === 'A') {
+      data = value.split('.').map(v => parseInt(v));
+    } else if (type === 'AAAA') {
+      const parts = value.split(':');
+      for (const part of parts) {
+        const v = parseInt(part || "0", 16);
+        data.push(v >> 8);
+        data.push(v & 0xff);
+      }
+    } else if (type === 'CNAME') {
+      const labels = value.split('.');
+      for (const label of labels) {
+        data.push(label.length);
+        for (let i = 0; i < label.length; i++) data.push(label.charCodeAt(i));
+      }
+      data.push(0);
+    } else if (type === 'TXT') {
+      data.push(value.length);
+      for (let i = 0; i < value.length; i++) data.push(value.charCodeAt(i));
     }
-  } else if (type === 'CNAME') {
-    const labels = value.split('.');
-    for (const label of labels) {
-      data.push(label.length);
-      for (let i = 0; i < label.length; i++) data.push(label.charCodeAt(i));
-    }
-    data.push(0);
-  } else if (type === 'TXT') {
-    data.push(value.length);
-    for (let i = 0; i < value.length; i++) data.push(value.charCodeAt(i));
+  } catch (e) {
+    console.error("Failed to encode Answer data:", e);
+    // 编码失败回退到 NXDOMAIN
+    header[3] = 0x83; // RCODE 3
+    header[7] = 0;    // ANCOUNT 0
+    const res = new Uint8Array(12 + questionSection.length);
+    res.set(header);
+    res.set(questionSection, 12);
+    return res;
   }
 
   const answerSection = new Uint8Array(10 + data.length);
