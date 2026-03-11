@@ -11,13 +11,16 @@ function decodeName(buffer: Uint8Array, offset: number): { name: string; read: n
   let iterations = 0;
 
   while (iterations < 128) {
+    if (curr >= buffer.length) break; // 边界检查
     const len = buffer[curr];
+    
     if (len === 0) {
       if (!jumped) consumed++;
       break;
     }
 
     if ((len & 0xc0) === 0xc0) {
+      if (curr + 1 >= buffer.length) break; // 指针字节不足
       const pointer = ((len & 0x3f) << 8) | buffer[curr + 1];
       if (!jumped) {
         consumed += 2;
@@ -29,6 +32,9 @@ function decodeName(buffer: Uint8Array, offset: number): { name: string; read: n
     }
 
     if (name.length > 0) name += ".";
+    // 检查标签内容是否超出范围
+    if (curr + 1 + len > buffer.length) break;
+    
     for (let i = 0; i < len; i++) {
       name += String.fromCharCode(buffer[curr + 1 + i]);
     }
@@ -49,7 +55,6 @@ export async function parseDNSQuery(request: Request): Promise<DNSQuery | null> 
       const dnsParam = url.searchParams.get("dns");
       if (!dnsParam) return null;
 
-      // 补齐 Base64 填充符号并处理 URL-safe 字符
       let base64 = dnsParam.replace(/-/g, "+").replace(/_/g, "/");
       while (base64.length % 4) base64 += '=';
       
@@ -65,11 +70,15 @@ export async function parseDNSQuery(request: Request): Promise<DNSQuery | null> 
       return null;
     }
 
-    if (raw.length < 12) return null;
+    // 基础长度检查：Header(12) + QTYPE(2) + QCLASS(2) = 16
+    if (raw.length < 16) return null;
 
-    // 使用新的 decodeName 替代旧的解析函数
     const { name, read } = decodeName(raw, 12);
     const qtypeOffset = 12 + read;
+    
+    // 再次检查剩余长度
+    if (qtypeOffset + 4 > raw.length) return null;
+    
     const qtypeCode = (raw[qtypeOffset] << 8) | raw[qtypeOffset + 1];
     
     return {
