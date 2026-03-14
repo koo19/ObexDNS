@@ -22,7 +22,8 @@
     "NorthAmerica": "North America",
     "nae": "North America East",
     "naw": "North America West",
-    "eu": "Europe"
+    "eu": "Europe",
+    "invalidFormat": "Invalid File Format"
   },
   "nav": {
     "setup": "Setup",
@@ -189,6 +190,7 @@
     "detailReason": "Reason",
     "detailUpstream": "Upstream",
     "detailNoReason": "None (Released)",
+    "detailECS": "ECS",
     "resolutionResult": "Resolution Result",
     "noResult": "No Result",
     "networkDetails": "Network Details",
@@ -276,7 +278,17 @@
     "retention30d": "30 Days (Default)",
     "retention180d": "180 Days",
     "retention360d": "360 Days",
-    "retention720d": "720 Days (Max)"
+    "retention720d": "720 Days (Max)",
+    "blockModeTitle": "Block Response Mode",
+    "blockModeDesc": "What to return when a domain is blocked",
+    "default": "Default",
+    "NXDOMAIN": "Non Existent Domain",
+    "NODATA": "No Records Returned",
+    "customIP": "Custom IP",
+    "export": "Export Profile",
+    "exportSuccess": "Profile exported successfully",
+    "exportError": "Failed to export profile, please try again later",
+    "nameUpdateSuccess": "Profile name updated successfully"
   },
   "account": {
     "title": "Account Settings",
