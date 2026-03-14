@@ -190,6 +190,7 @@
     "detailUpstream": "上游服务器",
     "detailReason": "原因",
     "detailNoReason": "无 (已放行)",
+    "detailECS": "ECS",
     "resolutionResult": "解析结果",
     "noResult": "无结果",
     "networkDetails": "网络详情",

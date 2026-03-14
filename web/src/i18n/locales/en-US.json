@@ -190,6 +190,7 @@
     "detailReason": "Reason",
     "detailUpstream": "Upstream",
     "detailNoReason": "None (Released)",
+    "detailECS": "ECS",
     "resolutionResult": "Resolution Result",
     "noResult": "No Result",
     "networkDetails": "Network Details",

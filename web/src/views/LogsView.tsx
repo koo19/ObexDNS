@@ -653,6 +653,11 @@ export const LogsView: React.FC<LogsViewProps> = ({
                     value={selectedLog.reason || t("logs.detailNoReason")}
                     italic
                   />
+                  <DetailItem
+                    label={t("logs.detailECS")}
+                    value={selectedLog.ecs}
+                    italic
+                  />
                 </div>
               </SectionCard>
             </Section>

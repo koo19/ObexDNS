@@ -13,11 +13,13 @@ export const pipelineResolver = {
     const targetUrl = new URL(upstreamUrl);
     targetUrl.searchParams.set('dns', btoa(String.fromCharCode(...query.raw)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''));
 
+    let ecs = "";
+
     if (settings.ecs?.enabled) {
       const clientIp = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
-      let ecs = settings.ecs.use_client_ip ? `${clientIp}/${clientIp.includes(':') ? 48 : 24}` : (settings.ecs.ipv4_cidr || settings.ecs.ipv6_cidr);
-      if (ecs) targetUrl.searchParams.set('edns_client_subnet', ecs);
+      ecs = settings.ecs.use_client_ip ? `${clientIp}/${clientIp.includes(':') ? 48 : 24}` : (settings.ecs.ipv4_cidr || settings.ecs.ipv6_cidr);
     }
+    if (ecs) targetUrl.searchParams.set('edns_client_subnet', ecs);
 
     try {
       const response = await fetch(targetUrl.toString(), {
@@ -66,7 +68,8 @@ export const pipelineResolver = {
           answer: parsedAnswers.map(a => a.data).join(", "),
           dest_geoip: destGeoJson,
           upstream: upstreamUrl,
-          latency
+          latency,
+          ecs,
         });
 
         if (answer.length > 0) {
@@ -115,7 +118,7 @@ export const pipelineResolver = {
     } else {
       // 处理拦截模式 (BLOCK)
       const mode = settings.block_mode || 'NULL_IP';
-      
+
       if (mode === 'NXDOMAIN') {
         // 返回 RCODE 3, 0 Answers
         answer = buildResponse(query.raw, query.type, "", 3600, 3);
