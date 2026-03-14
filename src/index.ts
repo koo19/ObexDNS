@@ -27,7 +27,7 @@ export default {
       const clientIp = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
       const connectedProfileId = await cacheUtils.get<string>(cache, `active_dns:${clientIp}`);
       const cf = (request as any).cf;
-      
+
       // 提取地区配置变量
       const regions: Record<string, any> = {};
       for (const [key, value] of Object.entries(env)) {
@@ -35,7 +35,7 @@ export default {
           try {
             const regionKey = key.replace('IP_REGION_', '');
             regions[regionKey] = JSON.parse(value.trim().replace(/^'|'$/g, ""));
-          } catch (e) {}
+          } catch (e) { }
         }
       }
 
@@ -59,10 +59,10 @@ export default {
         const { user } = await lucia.validateSession(sessionId);
         if (user) currentUser = user as any;
       }
-      
+
       const isAuthRoute = ['/api/auth/login', '/api/auth/signup'].includes(url.pathname);
       const isMobileConfigRoute = url.pathname.endsWith('/mobileconfig');
-      
+
       if (!currentUser && !isAuthRoute && !isMobileConfigRoute) {
         return new Response("Unauthorized", { status: 401 });
       }
@@ -98,7 +98,7 @@ export default {
             const nowSec = Math.floor(Date.now() / 1000);
             const lastActiveKey = `active_throttle:${profileId}`;
             const lastActiveThrottled = await cacheUtils.get<number>(cache, lastActiveKey);
-            
+
             if (!lastActiveThrottled || nowSec - lastActiveThrottled > 3600) {
               // 更新 Profile 活跃时间
               await env.DB.prepare("UPDATE profiles SET last_active_at = ? WHERE id = ?").bind(nowSec, profileId).run();
@@ -140,7 +140,7 @@ export default {
     const logModel = new LogModel(env.DB);
     const now = Math.floor(Date.now() / 1000);
     const inactivityThreshold = now - (180 * 24 * 3600); // 180 天
-    
+
     // 清理 180 天无活动的普通用户 (级联删除其所有 Profile、规则和日志)
     try {
       await env.DB.prepare("DELETE FROM users WHERE role = 'user' AND last_active_at < ?").bind(inactivityThreshold).run();
@@ -149,14 +149,14 @@ export default {
     }
 
     // 原有的日志清理逻辑
-    const { results: profiles } = await env.DB.prepare("SELECT id, settings FROM profiles").all<{id: string, settings: string}>();
-    
+    const { results: profiles } = await env.DB.prepare("SELECT id, settings FROM profiles").all<{ id: string, settings: string }>();
+
     for (const profile of profiles) {
       try {
         const settings = JSON.parse(profile.settings);
-        const days = settings.log_retention_days || 30; 
+        const days = settings.log_retention_days || 30;
         const threshold = Math.floor(Date.now() / 1000 - (days * 24 * 3600));
-        
+
         await logModel.cleanup(profile.id, threshold);
         // 定期同步外部列表
         ctx.waitUntil(syncProfileLists(profile.id, env, ctx));
