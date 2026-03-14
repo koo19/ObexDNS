@@ -23,7 +23,10 @@
     "nae": "北美东部",
     "naw": "北美西部",
     "eu": "欧洲",
-    "invalidFormat": "无效文件格式"
+    "invalidFormat": "无效文件格式",
+    "import": "导入",
+    "importSuccess": "配置成功导入",
+    "importError": "配置导入失败，请确保格式正确且稍后再试"
   },
   "nav": {
     "setup": "安装",
