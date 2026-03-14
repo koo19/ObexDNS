@@ -23,7 +23,10 @@
     "nae": "North America East",
     "naw": "North America West",
     "eu": "Europe",
-    "invalidFormat": "Invalid File Format"
+    "invalidFormat": "Invalid File Format",
+    "import": "Import",
+    "importSuccess": "Profile imported successfully",
+    "importError": "Failed to import profile, please ensure the format is correct and try again later"
   },
   "nav": {
     "setup": "Setup",
