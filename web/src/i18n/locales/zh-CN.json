@@ -22,7 +22,8 @@
     "NorthAmerica": "北美",
     "nae": "北美东部",
     "naw": "北美西部",
-    "eu": "欧洲"
+    "eu": "欧洲",
+    "invalidFormat": "无效文件格式"
   },
   "nav": {
     "setup": "安装",
@@ -189,6 +190,7 @@
     "detailUpstream": "上游服务器",
     "detailReason": "原因",
     "detailNoReason": "无 (已放行)",
+    "detailECS": "ECS",
     "resolutionResult": "解析结果",
     "noResult": "无结果",
     "networkDetails": "网络详情",
@@ -233,8 +235,9 @@
     "saveError": "保存设置失败，请稍后再试",
     "upstreamTitle": "上游服务",
     "dohUrl": "DoH URL",
+    "dnsIP": "DNS IP",
     "httpsOnly": "(仅支持 HTTPS)",
-    "upstreamDesc": "所有未被拦截的查询将由本应用转发至此服务器。",
+    "upstreamDesc": "所有未被拦截的查询将由本应用转发至此服务器。支持 DoH (HTTPS) 或 经典 DNS (如 1.1.1.2)。经典 DNS 将通过 TCP 转发。",
     "defaultPolicyTitle": "默认过滤行为",
     "onNoMatch": "未匹配规则时",
     "allowAll": "允许所有查询",
@@ -282,7 +285,11 @@
     "default": "默认",
     "NXDOMAIN": "域名不存在",
     "NODATA": "空回答",
-    "customIP": "自定义 IP"
+    "customIP": "自定义 IP",
+    "export": "导出配置",
+    "exportSuccess": "配置成功导出",
+    "exportError": "配置导出失败，请稍后再试",
+    "nameUpdateSuccess": "配置名称已更新"
   },
   "account": {
     "title": "账号设置",

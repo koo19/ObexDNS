@@ -27,11 +27,15 @@ import {
   Zap,
   MapPin,
   Activity,
+  Download,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface ProfileSettings {
-  upstream: string[]; // DoH URLs
+  upstream: string[]; // DoH URLs or Classic DNS
   ecs: {
     enabled: boolean;
     use_client_ip: boolean;
@@ -91,51 +95,76 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [saving, setSaving] = useState(false);
   const { t } = useTranslation();
 
-  const PRESET_UPSTREAMS = useMemo(() => [
-    {
-      label: t("settings.presetCloudflareSecurity"),
-      url: "https://security.cloudflare-dns.com/dns-query",
-    },
-    {
-      label: t("settings.presetCloudflareFamilies"),
-      url: "https://family.cloudflare-dns.com/dns-query",
-    },
-    {
-      label: t("settings.presetQuad9"),
-      url: "https://dns.quad9.net/dns-query",
-    },
-    {
-      label: t("settings.presetQuad9Ecs"),
-      url: "https://dns11.quad9.net/dns-query",
-    },
-    {
-      label: t("settings.presetControlDFree"),
-      url: "https://freedns.controld.com/no-ads-malware-typo",
-    },
-    {
-      label: t("settings.presetControlDUncensored"),
-      url: "https://freedns.controld.com/uncensored",
-    },
-    {
-      label: t("settings.presetAdGuard"),
-      url: "https://dns.adguard-dns.com/dns-query",
-    },
-    {
-      label: t("settings.presetAdGuardFamily"),
-      url: "https://family.adguard-dns.com/dns-query",
-    },
-  ], [t]);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState("");
 
-  const LOG_RETENTION_OPTIONS = useMemo(() => [
-    { label: t("settings.retention10m"), value: 0.007 },
-    { label: t("settings.retention1h"), value: 0.0416 },
-    { label: t("settings.retention24h"), value: 1 },
-    { label: t("settings.retention7d"), value: 7 },
-    { label: t("settings.retention30d"), value: 30 },
-    { label: t("settings.retention180d"), value: 180 },
-    { label: t("settings.retention360d"), value: 360 },
-    { label: t("settings.retention720d"), value: 720 },
-  ], [t]);
+  const PRESET_UPSTREAMS = useMemo(
+    () => [
+      {
+        label: t("settings.presetCloudflareSecurity"),
+        url: "https://security.cloudflare-dns.com/dns-query",
+      },
+      {
+        label: t("settings.presetCloudflareFamilies"),
+        url: "https://family.cloudflare-dns.com/dns-query",
+      },
+      {
+        label: t("settings.presetQuad9"),
+        url: "https://dns.quad9.net/dns-query",
+      },
+      {
+        label: t("settings.presetQuad9Ecs"),
+        url: "https://dns11.quad9.net/dns-query",
+      },
+      {
+        label: t("settings.presetControlDFree"),
+        url: "https://freedns.controld.com/no-ads-malware-typo",
+      },
+      {
+        label: t("settings.presetControlDUncensored"),
+        url: "https://freedns.controld.com/uncensored",
+      },
+      {
+        label: t("settings.presetAdGuard"),
+        url: "https://dns.adguard-dns.com/dns-query",
+      },
+      {
+        label: t("settings.presetAdGuardFamily"),
+        url: "https://family.adguard-dns.com/dns-query",
+      },
+      {
+        label: "Cloudflare (1.1.1.1)",
+        url: "1.1.1.1",
+      },
+      {
+        label: "Cloudflare Security (1.1.1.2)",
+        url: "1.1.1.2",
+      },
+      {
+        label: "Quad9 (9.9.9.9)",
+        url: "9.9.9.9:9953",
+      },
+      {
+        label: "Google (8.8.8.8)",
+        url: "8.8.8.8",
+      },
+    ],
+    [t],
+  );
+
+  const LOG_RETENTION_OPTIONS = useMemo(
+    () => [
+      { label: t("settings.retention10m"), value: 0.007 },
+      { label: t("settings.retention1h"), value: 0.0416 },
+      { label: t("settings.retention24h"), value: 1 },
+      { label: t("settings.retention7d"), value: 7 },
+      { label: t("settings.retention30d"), value: 30 },
+      { label: t("settings.retention180d"), value: 180 },
+      { label: t("settings.retention360d"), value: 360 },
+      { label: t("settings.retention720d"), value: 720 },
+    ],
+    [t],
+  );
 
   // DNS 测试相关状态
   const [testInput, setTestInput] = useState({
@@ -151,6 +180,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         const res = await fetch(`/api/profiles/${profileId}`);
         const data = await res.json();
         setProfile(data);
+        setEditName(data.name);
         setSettings(JSON.parse(data.settings));
         return profile;
       } catch (e) {
@@ -161,6 +191,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     };
     fetchProfile();
   }, [profileId]);
+
+  const updateProfileName = async () => {
+    if (!editName || editName === profile?.name) {
+      setIsEditingName(false);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/profiles/${profileId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editName }),
+      });
+      if (res.ok) {
+        setProfile((prev) => (prev ? { ...prev, name: editName } : null));
+        setIsEditingName(false);
+        toasterRef?.current?.show({
+          message: t("settings.nameUpdateSuccess", "名称已更新"),
+          intent: Intent.SUCCESS,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const saveSettings = async () => {
     if (!settings) return;
@@ -211,6 +265,48 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }
   };
 
+  const exportProfile = async () => {
+    if (!profile || !settings) return;
+    try {
+      // 获取规则列表以实现完整导出
+      const resRules = await fetch(`/api/profiles/${profileId}/rules`);
+      const rules = resRules.ok ? await resRules.json() : [];
+
+      const exportData = {
+        version: 1,
+        name: profile.name,
+        settings: settings,
+        rules: rules,
+        exported_at: Math.floor(Date.now() / 1000),
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `obex-dns-${profile.name || profileId}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toasterRef?.current?.show({
+        message: t("settings.exportSuccess", "配置成功导出"),
+        intent: Intent.SUCCESS,
+        icon: "download",
+      });
+    } catch (e) {
+      console.error(e);
+      toasterRef?.current?.show({
+        message: t("settings.exportError", "导出失败"),
+        intent: Intent.DANGER,
+        icon: "error",
+      });
+    }
+  };
+
   if (loading || !settings)
     return (
       <div className="p-20 flex justify-center">
@@ -244,17 +340,66 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     <div className="p-8 max-w-5xl mx-auto space-y-8 pb-20">
       <div className="mb-6 flex justify-between items-center">
         <div className="flex flex-col justify-start">
-          <h2 className="bp6-heading">{t("settings.title")}</h2>
+          {isEditingName ? (
+            <div className="flex items-center gap-2 mb-1">
+              <InputGroup
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") updateProfileName();
+                  if (e.key === "Escape") {
+                    setIsEditingName(false);
+                    setEditName(profile?.name || "");
+                  }
+                }}
+              />
+              <Button
+                icon={<Check size={16} />}
+                intent={Intent.SUCCESS}
+                minimal
+                onClick={updateProfileName}
+              />
+              <Button
+                icon={<X size={16} />}
+                minimal
+                onClick={() => {
+                  setIsEditingName(false);
+                  setEditName(profile?.name || "");
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              className="group flex items-center gap-2 mb-1 cursor-pointer"
+              onClick={() => setIsEditingName(true)}
+            >
+              <h2 className="bp6-heading mb-0">{profile?.name}</h2>
+              <Button
+                icon={<Edit2 size={14} />}
+                minimal
+                className="opacity-30 group-hover:opacity-100 transition-opacity"
+              />
+            </div>
+          )}
           <p className="bp6-text-muted">{t("settings.subtitle")}</p>
         </div>
-        <Button
-          size="large"
-          intent={Intent.PRIMARY}
-          icon="floppy-disk"
-          text={t("settings.saveChanges")}
-          onClick={saveSettings}
-          loading={saving}
-        />
+        <div className="flex gap-2">
+          <Button
+            size="large"
+            icon={<Download size={18} />}
+            text={t("settings.export", "导出配置")}
+            onClick={exportProfile}
+          />
+          <Button
+            size="large"
+            intent={Intent.PRIMARY}
+            icon="floppy-disk"
+            text={t("settings.saveChanges")}
+            onClick={saveSettings}
+            loading={saving}
+          />
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 上游服务器设置 */}
@@ -263,9 +408,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           className="dark:bg-gray-900 dark:border-gray-800"
         >
           <H5 className="flex items-center gap-2 mb-4 font-bold">
-            <Server size={18} className="text-blue-500" /> {t("settings.upstreamTitle")}
+            <Server size={18} className="text-blue-500" />{" "}
+            {t("settings.upstreamTitle")}
           </H5>
-          <FormGroup label={t("settings.dohUrl")} labelInfo={t("settings.httpsOnly")}>
+          <FormGroup label={t("settings.dohUrl") + "/" + t("settings.dnsIP")}>
             <InputGroup
               fill
               placeholder="https://dns.example.net/dns-query"
@@ -288,7 +434,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             />
           </FormGroup>
           <p className="text-xs opacity-60">
-            {t("settings.upstreamDesc")}
+            {t(
+              "settings.upstreamDesc",
+            )}
           </p>
         </Card>
 
@@ -298,7 +446,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           className="dark:bg-gray-900 dark:border-gray-800"
         >
           <H5 className="flex items-center gap-2 mb-4 font-bold">
-            <Shield size={18} className="text-green-500" /> {t("settings.defaultPolicyTitle")}
+            <Shield size={18} className="text-green-500" />{" "}
+            {t("settings.defaultPolicyTitle")}
           </H5>
           <div className="space-y-4">
             <FormGroup label={t("settings.onNoMatch")}>
@@ -312,18 +461,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   })
                 }
               >
-                <option value="ALLOW">
-                  {t("settings.allowAll")}
-                </option>
-                <option value="BLOCK">
-                  {t("settings.blockAll")}
-                </option>
+                <option value="ALLOW">{t("settings.allowAll")}</option>
+                <option value="BLOCK">{t("settings.blockAll")}</option>
               </HTMLSelect>
             </FormGroup>
 
             <Divider />
 
-            <FormGroup 
+            <FormGroup
               label={t("settings.blockModeTitle")}
               helperText={t("settings.blockModeDesc")}
             >
@@ -337,8 +482,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   })
                 }
               >
-                <option value="NULL_IP">0.0.0.0 / :: ({t("settings.default")})</option>
-                <option value="NXDOMAIN">NXDOMAIN ({t("settings.NXDOMAIN")})</option>
+                <option value="NULL_IP">
+                  0.0.0.0 / :: ({t("settings.default")})
+                </option>
+                <option value="NXDOMAIN">
+                  NXDOMAIN ({t("settings.NXDOMAIN")})
+                </option>
                 <option value="NODATA">NODATA ({t("settings.NODATA")})</option>
                 <option value="CUSTOM_IP">{t("settings.customIP")}</option>
               </HTMLSelect>
@@ -350,14 +499,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   placeholder="IPv4: 127.0.0.1"
                   value={settings.custom_block_ipv4 || ""}
                   onChange={(e) =>
-                    setSettings({ ...settings, custom_block_ipv4: e.target.value })
+                    setSettings({
+                      ...settings,
+                      custom_block_ipv4: e.target.value,
+                    })
                   }
                 />
                 <InputGroup
                   placeholder="IPv6: ::1"
                   value={settings.custom_block_ipv6 || ""}
                   onChange={(e) =>
-                    setSettings({ ...settings, custom_block_ipv6: e.target.value })
+                    setSettings({
+                      ...settings,
+                      custom_block_ipv6: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -371,7 +526,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           className="dark:bg-gray-900 dark:border-gray-800"
         >
           <H5 className="flex items-center gap-2 mb-4 font-bold">
-            <Clock size={18} className="text-purple-500" /> {t("settings.logRetentionTitle")}
+            <Clock size={18} className="text-purple-500" />{" "}
+            {t("settings.logRetentionTitle")}
           </H5>
           <div className="space-y-4">
             <FormGroup label={t("settings.retentionDuration")}>
@@ -392,9 +548,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 ))}
               </HTMLSelect>
             </FormGroup>
-            <p className="text-xs opacity-60">
-              {t("settings.retentionDesc")}
-            </p>
+            <p className="text-xs opacity-60">{t("settings.retentionDesc")}</p>
           </div>
         </Card>
 
@@ -404,7 +558,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           className="dark:bg-gray-900 dark:border-gray-800"
         >
           <H5 className="flex items-center gap-2 mb-4 font-bold">
-            <Globe size={18} className="text-orange-500" /> {t("settings.ecsTitle")}
+            <Globe size={18} className="text-orange-500" />{" "}
+            {t("settings.ecsTitle")}
           </H5>
           <div className="space-y-4">
             <Switch
@@ -630,7 +785,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 >
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between">
-                      <span className="font-bold">{t("settings.diagnostics")}</span>
+                      <span className="font-bold">
+                        {t("settings.diagnostics")}
+                      </span>
                       <span>HTTP {testResult.diagnostics.status}</span>
                     </div>
                     <div className="break-all">

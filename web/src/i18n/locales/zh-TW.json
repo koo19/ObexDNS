@@ -22,7 +22,8 @@
     "NorthAmerica": "北美",
     "nae": "北美東部",
     "naw": "北美西部",
-    "eu": "歐洲"
+    "eu": "歐洲",
+    "invalidFormat": "無效文件格式"
   },
   "nav": {
     "setup": "安裝",
@@ -189,6 +190,7 @@
     "detailUpstream": "上游伺服器",
     "detailReason": "原因",
     "detailNoReason": "無 (已允許)",
+    "detailECS": "ECS",
     "resolutionResult": "解析結果",
     "noResult": "無結果",
     "networkDetails": "網路詳情",
@@ -233,8 +235,9 @@
     "saveError": "儲存設定失敗，請稍後再試",
     "upstreamTitle": "上游服務",
     "dohUrl": "DoH URL",
+    "dnsIP": "DNS IP",
     "httpsOnly": "(僅支援 HTTPS)",
-    "upstreamDesc": "所有未被封鎖的查詢將由本應用程式轉發至此伺服器。",
+    "upstreamDesc": "所有未被封鎖的查詢將由本應用程式轉發至此伺服器。支援 DoH (HTTPS) 或 經典 DNS (如 1.1.1.2)。經典 DNS 將透過 TCP 轉送。",
     "defaultPolicyTitle": "預設過濾行為",
     "onNoMatch": "未符合規則時",
     "allowAll": "允許所有查詢",
@@ -282,7 +285,11 @@
     "default": "預設",
     "NXDOMAIN": "查無此名",
     "NODATA": "空回答",
-    "customIP": "自訂 IP"
+    "customIP": "自訂 IP",
+    "export": "匯出設定檔",
+    "exportSuccess": "設定檔成功匯出",
+    "exportError": "設定檔匯出失敗，請稍後再試",
+    "nameUpdateSuccess": "設定檔名稱已更新"
   },
   "account": {
     "title": "帳號設定",
