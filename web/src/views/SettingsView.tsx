@@ -336,7 +336,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <Button
                 icon={<Edit2 size={14} />}
                 minimal
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                className="opacity-30 group-hover:opacity-100 transition-opacity"
               />
             </div>
           )}
