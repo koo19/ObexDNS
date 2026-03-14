@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="web/src/assets/Obex_DNS_Logo-256.png" alt="Obex DNS Logo" width="128">
+  <img src="web/src/assets/Obex_DNS_Logo-256.webp" alt="Obex DNS Logo" width="128">
   <h1>Obex DNS</h1>
   <p>Protective DNS resolver based on Cloudflare Workers & D1</p>
   <p align="center">
@@ -31,27 +31,27 @@ DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS conn
 
 | User Login |
 |:---:|
-| ![Login](docs/screenshots/dns.obex-login.png) |
+| ![Login](docs/screenshots/dns.obex-login.webp) |
 
 | Setup Guide | Real-time Analytics |
 |:---:|:---:|
-| ![Setup](docs/screenshots/dns.obex-setup.png) | ![Stats](docs/screenshots/dns.obex-stats.JPG) |
+| ![Setup](docs/screenshots/dns.obex-setup.webp) | ![Stats](docs/screenshots/dns.obex-stats.webp) |
 
 | Rule Management | External Filters |
 |:---:|:---:|
-| ![Rules](docs/screenshots/dns.obex-rules.png) | ![Filters](docs/screenshots/dns.obex-filter.png) |
+| ![Rules](docs/screenshots/dns.obex-rules.webp) | ![Filters](docs/screenshots/dns.obex-filter.webp) |
 
 | Resolution Logs | Log Detail |
 |:---:|:---:|
-| ![Resolution Logs](docs/screenshots/dns.obex-log.jpg) | ![Log Detail](docs/screenshots/dns.obex-log_detail.jpg) |
+| ![Resolution Logs](docs/screenshots/dns.obex-log.webp) | ![Log Detail](docs/screenshots/dns.obex-log_detail.webp) |
 
 | Profile Settings | Profile Select |
 |:---:|:---:|
-| ![Settings](docs/screenshots/dns.obex-settings.png) | ![Profile Select](docs/screenshots/dns.obex-profile_select.png) |
+| ![Settings](docs/screenshots/dns.obex-settings.webp) | ![Profile Select](docs/screenshots/dns.obex-profile_select.webp) |
 
 | Mobile Logs | Mobile Stats |
 |:---:|:---:|
-| ![Mobile Logs](docs/screenshots/dns.obex-mobile_log.png) | ![Mobile Stats](docs/screenshots/dns.obex-mobile_stats.jpg) |
+| ![Mobile Logs](docs/screenshots/dns.obex-mobile_log.webp) | ![Mobile Stats](docs/screenshots/dns.obex-mobile_stats.webp) |
 
 ---
 
