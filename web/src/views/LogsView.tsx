@@ -589,7 +589,11 @@ export const LogsView: React.FC<LogsViewProps> = ({
       >
         {selectedLog && (
           <div className="p-6 space-y-4 overflow-y-auto h-full pb-safe">
-            <Section title={t("logs.basicInfo")} icon={<Activity size={16} />}>
+            <Section
+              title={t("logs.basicInfo")}
+              icon={<Activity size={16} />}
+              className="shadow-none! rounded-lg!"
+            >
               <SectionCard>
                 <div className="space-y-3">
                   <DetailItem
