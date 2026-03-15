@@ -196,7 +196,7 @@ export async function handleProfilesRequest(request: Request, env: Env, user: Us
 				</dict>
 			</array>
 			<key>PayloadDescription</key>
-			<string>Obex DNS protects your network traffic</string>
+			<string>Obex DNS protects your Internet traffic</string>
 			<key>PayloadDisplayName</key>
 			<string>Obex DoH (${profile.name})</string>
 			<key>PayloadIdentifier</key>
@@ -212,7 +212,7 @@ export async function handleProfilesRequest(request: Request, env: Env, user: Us
 		</dict>
 	</array>
 	<key>PayloadDescription</key>
-	<string>Obex DNS protects your network traffic</string>
+	<string>Obex DNS protects your Internet traffic</string>
 	<key>PayloadDisplayName</key>
 	<string>Obex - ${profile.name}</string>
 	<key>PayloadIdentifier</key>
