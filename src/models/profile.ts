@@ -28,6 +28,12 @@ export class ProfileModel {
     return results;
   }
 
+  async listByOwner(ownerId: string): Promise<Profile[]> {
+    const { results } = await this.db.prepare("SELECT * FROM profiles WHERE owner_id = ? ORDER BY created_at DESC")
+      .bind(ownerId).all<Profile>();
+    return results;
+  }
+
   async findByName(ownerId: string, name: string): Promise<Profile | null> {
     return await this.db.prepare("SELECT * FROM profiles WHERE owner_id = ? AND name = ?")
       .bind(ownerId, name).first<Profile | null>();

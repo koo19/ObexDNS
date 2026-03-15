@@ -5,6 +5,7 @@ import { pipeline } from "../pipeline";
 import { syncProfileLists } from "../utils/sync";
 import { LogModel } from "../models/log";
 import { ProfileModel } from "../models/profile";
+import { generateMobileConfig } from "../utils/mobileconfig";
 
 export async function handleProfilesRequest(request: Request, env: Env, user: User | null, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
@@ -17,8 +18,7 @@ export async function handleProfilesRequest(request: Request, env: Env, user: Us
     if (!user) return new Response("Unauthorized", { status: 401 });
 
     if (request.method === 'GET') {
-      const filter = RBAC.getProfileFilter(user);
-      const results = await profileModel.list(filter.sql, filter.params);
+      const results = await profileModel.listByOwner(user.id);
       return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
     }
 
@@ -148,79 +148,7 @@ export async function handleProfilesRequest(request: Request, env: Env, user: Us
 
     // 子资源路由: /api/profiles/:id/mobileconfig
     if (pathParts[3] === 'mobileconfig' && request.method === 'GET') {
-      const dohUrl = `${url.origin}/${profileId}`;
-      const payloadUUID = crypto.randomUUID();
-      const profileUUID = crypto.randomUUID();
-      const config = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>PayloadContent</key>
-	<array>
-		<dict>
-			<key>DNSSettings</key>
-			<dict>
-				<key>DNSProtocol</key>
-				<string>HTTPS</string>
-				<key>ServerHTTPVersion</key>
-				<string>3</string>
-				<key>ServerURL</key>
-				<string>${dohUrl}</string>
-			</dict>
-			<key>OnDemandRules</key>
-			<array>
-				<dict>
-					<key>Action</key>
-					<string>Connect</string>
-					<key>InterfaceTypeMatch</key>
-					<string>WiFi</string>
-				</dict>
-				<dict>
-					<key>Action</key>
-					<string>Connect</string>
-					<key>InterfaceTypeMatch</key>
-					<string>Cellular</string>
-				</dict>
-				<dict>
-					<key>Action</key>
-					<string>Disconnect</string>
-				</dict>
-			</array>
-			<key>PayloadDescription</key>
-			<string>Obex DNS protects your network traffic</string>
-			<key>PayloadDisplayName</key>
-			<string>Obex DoH (${profile.name})</string>
-			<key>PayloadIdentifier</key>
-			<string>com.apple.dnsSettings.managed.${payloadUUID}</string>
-			<key>PayloadName</key>
-			<string>Obex DoH (${profile.name})</string>
-			<key>PayloadType</key>
-			<string>com.apple.dnsSettings.managed</string>
-			<key>PayloadUUID</key>
-			<string>${payloadUUID}</string>
-			<key>PayloadVersion</key>
-			<integer>1</integer>
-		</dict>
-	</array>
-	<key>PayloadDescription</key>
-	<string>Obex DNS protects your network traffic</string>
-	<key>PayloadDisplayName</key>
-	<string>Obex - ${profile.name}</string>
-	<key>PayloadIdentifier</key>
-	<string>obex.dns.profile</string>
-	<key>PayloadName</key>
-	<string>Obex - ${profile.name}</string>
-	<key>PayloadRemovalDisallowed</key>
-	<false/>
-	<key>PayloadType</key>
-	<string>Configuration</string>
-	<key>PayloadUUID</key>
-	<string>${profileUUID}</string>
-	<key>PayloadVersion</key>
-	<integer>1</integer>
-</dict>
-</plist>
-`;
+      const config = generateMobileConfig(profileId, profile.name, url.origin);
       return new Response(config, { headers: { 'Content-Type': 'application/x-apple-aspen-config', 'Content-Disposition': `attachment; filename="obex-${profileId}.mobileconfig"` } });
     }
 

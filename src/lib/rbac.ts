@@ -15,12 +15,4 @@ export class RBAC {
     // 严格限制所有权，即便是 admin 也不应直接查看其他用户的业务配置/日志
     return profile.owner_id === user.id;
   }
-
-  /**
-   * 构造 Profile 查询的过滤条件
-   * 返回 SQL 片段和绑定的参数
-   */
-  static getProfileFilter(user: User): { sql: string; params: any[] } {
-    return { sql: "WHERE owner_id = ? ORDER BY created_at DESC", params: [user.id] };
-  }
 }
