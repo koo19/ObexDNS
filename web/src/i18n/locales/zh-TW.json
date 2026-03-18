@@ -241,7 +241,7 @@
     "dnsIP": "DNS IP",
     "classicDns": "經典 DNS",
     "httpsOnly": "僅支援 HTTPS",
-    "upstreamDesc": "所有未被封鎖的查詢將由本應用程式轉發至此伺服器。建議使用 DoH (DNS over HTTPS)，相對而言會擁有更快更穩健更安全的連線。支援 DoH (HTTPS) 或 經典 DNS (如 1.1.1.2)。經典 DNS 將透過 TCP 轉送。",
+    "upstreamDesc": "所有未被封鎖的查詢將由本應用程式轉發至此伺服器。支援 DoH (HTTPS) 或 經典 DNS (如 1.1.1.2)。經典 DNS 將透過 TCP 轉送。建議使用 DoH (DNS over HTTPS)，相對而言會擁有更快更穩健更安全的連線。",
     "defaultPolicyTitle": "預設過濾行為",
     "onNoMatch": "未符合規則時",
     "allowAll": "允許所有查詢",
