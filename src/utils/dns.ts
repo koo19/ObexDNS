@@ -1,5 +1,50 @@
 import { DNSQuery } from "../types";
 
+const DNS_TYPES: Record<number, string> = {
+  1: "A",
+  2: "NS",
+  5: "CNAME",
+  6: "SOA",
+  12: "PTR",
+  13: "HINFO",
+  15: "MX",
+  16: "TXT",
+  17: "RP",
+  24: "SIG",
+  25: "KEY",
+  28: "AAAA",
+  29: "LOC",
+  33: "SRV",
+  35: "NAPTR",
+  36: "KX",
+  37: "CERT",
+  39: "DNAME",
+  41: "OPT",
+  43: "DS",
+  44: "SSHFP",
+  45: "IPSECKEY",
+  46: "RRSIG",
+  47: "NSEC",
+  48: "DNSKEY",
+  49: "DHCID",
+  50: "NSEC3",
+  51: "NSEC3PARAM",
+  52: "TLSA",
+  53: "SMIMEA",
+  59: "CDS",
+  64: "SVCB",
+  65: "HTTPS",
+  99: "SPF",
+  255: "ANY",
+  256: "URI",
+  257: "CAA",
+  32769: "DLV"
+};
+
+const DNS_TYPE_TO_CODE: Record<string, number> = Object.fromEntries(
+  Object.entries(DNS_TYPES).map(([code, name]) => [name, Number(code)])
+);
+
 /**
  * 解析 DNS 域名（支持压缩指针 0xC0）
  */
@@ -93,22 +138,7 @@ export async function parseDNSQuery(request: Request): Promise<DNSQuery | null> 
 }
 
 function getQTypeName(type: number): string {
-  const types: Record<number, string> = {
-    1: "A",
-    2: "NS",
-    5: "CNAME",
-    6: "SOA",
-    12: "PTR",
-    15: "MX",
-    16: "TXT",
-    28: "AAAA",
-    33: "SRV",
-    41: "OPT",
-    64: "SVCB",
-    65: "HTTPS",
-    255: "ANY"
-  };
-  return types[type] || `TYPE${type}`;
+  return DNS_TYPES[type] || `TYPE${type}`;
 }
 
 export function buildDNSQuery(name: string, type: string): Uint8Array {
@@ -137,8 +167,7 @@ export function buildDNSQuery(name: string, type: string): Uint8Array {
   }
   question.push(0); // Root
 
-  const typeMap: Record<string, number> = { "A": 1, "AAAA": 28, "CNAME": 5, "MX": 15, "TXT": 16 };
-  const typeCode = typeMap[type] || 1;
+  const typeCode = DNS_TYPE_TO_CODE[type] || 1;
   question.push(typeCode >> 8);
   question.push(typeCode & 0xff);
   question.push(0x00); // Class IN
@@ -271,19 +300,34 @@ export function buildResponse(queryRaw: Uint8Array, type: string, value: string,
       for (let i = 0; i < safeVal.length; i++) data.push(safeVal.charCodeAt(i));
     }
 
-    const answerRR = new Uint8Array(10 + data.length);
+    // 4. 构建 Answer Resource Record (RR)
+    // RR 结构: NAME(2) + TYPE(2) + CLASS(2) + TTL(4) + RDLENGTH(2) + RDATA(variable)
+    const rdlength = data.length;
+    // Answer Resource Record
+    const answerRR = new Uint8Array(10 + 2 + rdlength);
+    // NAME: 压缩指针，指向原始查询中的域名 (偏移量 12, 0x0c)
     answerRR[0] = 0xc0; answerRR[1] = 0x0c; // 压缩指针指向第一个问题
-    const typeMap: Record<string, number> = { "A": 1, "AAAA": 28, "CNAME": 5, "TXT": 16 };
-    const tCode = typeMap[type] || 1;
+    const tCode = DNS_TYPE_TO_CODE[type] || 1;
+    // TYPE: 记录类型 (A=1, AAAA=28, etc.)
     answerRR[2] = (tCode >> 8); answerRR[3] = tCode & 0xff;
+    // CLASS: 记录类别 (通常为 1, IN for Internet)
     answerRR[4] = 0; answerRR[5] = 1; // Class IN
+    // TTL: 生存时间 (秒)
     answerRR[6] = (ttl >> 24) & 0xff; answerRR[7] = (ttl >> 16) & 0xff;
     answerRR[8] = (ttl >> 8) & 0xff; answerRR[9] = ttl & 0xff;
-    answerRR.set(data, 10);
+    // RDLENGTH: RDATA 字段的长度
+    answerRR[10] = (rdlength >> 8) & 0xff;
+    answerRR[11] = rdlength & 0xff;
+    // RDATA: 实际的记录数据 (IP地址, 域名, 文本等)
+    answerRR.set(data, 12);
 
+    // 5. 组装最终的 DNS 响应包
     const res = new Uint8Array(12 + questionSection.length + answerRR.length);
+    // 写入 Header
     res.set(header);
+    // 写入 Question Section
     res.set(questionSection, 12);
+    // 写入 Answer Section
     res.set(answerRR, 12 + questionSection.length);
     return res;
   } catch (e) {
