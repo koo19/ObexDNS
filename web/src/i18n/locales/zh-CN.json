@@ -87,7 +87,7 @@
     "browserTitle": "浏览器配置 (Chrome/Edge)",
     "browserSteps": "设置 > 隐私和安全 > 安全 > 使用安全 DNS > 自定义 > 粘贴 URL。",
     "apple": "Apple",
-    "appleTitle": "macOS / iOS / iPadOS",
+    "appleTitle": "macOS / iOS / iPadOS / tvOS",
     "appleDesc": "Apple 设备支持通过描述文件快速配置。",
     "appleWarning": "描述文件不可在 \"锁定模式 (Lockdown Mode)\" 下安装，安装前请确认系统不处于相关状态。",
     "downloadConfig": "下载描述文件",

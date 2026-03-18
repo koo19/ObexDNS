@@ -87,7 +87,7 @@
     "browserTitle": "Browser Setup (Chrome/Edge)",
     "browserSteps": "Settings > Privacy and security > Security > Use secure DNS > With: Custom > Paste URL.",
     "apple": "Apple",
-    "appleTitle": "macOS / iOS / iPadOS",
+    "appleTitle": "macOS / iOS / iPadOS / tvOS",
     "appleDesc": "Apple devices support quick configuration via profiles.",
     "appleWarning": "Profiles cannot be installed in \"Lockdown Mode\". Ensure it is disabled before installing.",
     "downloadConfig": "Download Profile",
