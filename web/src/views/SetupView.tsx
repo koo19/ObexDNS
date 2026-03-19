@@ -32,6 +32,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { clsx } from "clsx";
 import { getPresetRegions, type RegionConfigItem } from "../config/regions";
 
 interface SetupViewProps {
@@ -143,7 +144,7 @@ export const SetupView: React.FC<SetupViewProps> = ({
           enriched[key] = {
             label: presetRegions[key]?.label || key,
             countries: presetRegions[key]?.countries || [],
-            ips: ips as any
+            ips: ips as any,
           };
         }
         setServerRegions(enriched);
@@ -194,23 +195,6 @@ export const SetupView: React.FC<SetupViewProps> = ({
     <div
       className={`mx-auto space-y-8 pb-24 ${isMobile ? "p-4" : "p-8 max-w-5xl"}`}
     >
-      <style>{`
-        @media (max-width: 767px) {
-          .setup-tabs-container .bp6-tab-list {
-            overflow-x: auto !important;
-            flex-wrap: nowrap !important;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE 10+ */
-            padding-bottom: 4px;
-          }
-          .setup-tabs-container .bp6-tab-list::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
-          }
-          .setup-tabs-container .bp6-tab {
-            flex-shrink: 0; /* 防止文字挤压 */
-          }
-        }
-      `}</style>
       <div className="flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
           <H3 className="font-bold text-gray-900 dark:text-white">
@@ -378,7 +362,18 @@ export const SetupView: React.FC<SetupViewProps> = ({
         renderActiveTabPanelOnly={true}
         vertical={!isMobile} // 移动端使用水平 Tab
         size="large"
-        className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm setup-tabs-container"
+        className={clsx(
+          "bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm setup-tabs-container",
+          isMobile && [
+            "[&_.bp6-tab-list]:!overflow-x-auto",
+            "[&_.bp6-tab-list]:!flex-nowrap",
+            "[&_.bp6-tab-list]:pb-1",
+            "[&_.bp6-tab-list]:[scrollbar-width:none]",
+            "[&_.bp6-tab-list]:[-ms-overflow-style:none]",
+            "[&_.bp6-tab-list::-webkit-scrollbar]:hidden",
+            "[&_.bp6-tab]:shrink-0",
+          ],
+        )}
       >
         <Tab
           id="browsers"
@@ -392,6 +387,15 @@ export const SetupView: React.FC<SetupViewProps> = ({
             <div className="space-y-4 md:ml-4 mt-4 md:mt-0">
               <H5 className="font-bold">{t("setup.browserTitle")}</H5>
               <p className="text-sm">{t("setup.browserSteps")}</p>
+              <p
+                className="text-[10px] opacity-50 cursor-pointer"
+                onClick={() => copyToClipboard("chrome://settings/security")}
+              >
+                {t(
+                  "setup.browserTips",
+                  "or copy this URL to the address bar: ",
+                ) + "chrome://settings/security"}
+              </p>
             </div>
           }
         />
@@ -408,7 +412,7 @@ export const SetupView: React.FC<SetupViewProps> = ({
             <div className="space-y-4 md:ml-4 mt-4 md:mt-0">
               <H5 className="font-bold">{t("setup.appleTitle")}</H5>
               <p className="text-sm">{t("setup.appleDesc")}</p>
-              <p className="text-[10px] opacity-50 mt-4! text-center">
+              <p className="text-[10px] opacity-50 text-center">
                 {t("setup.appleWarning")}
               </p>
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center">
@@ -445,6 +449,11 @@ export const SetupView: React.FC<SetupViewProps> = ({
                 })}
               </H5>
               <ol className="list-decimal list-inside space-y-4 text-sm leading-relaxed">
+                <li>
+                  <a href="ms-settings:network-status">
+                    {t("setup.windowsStep0")}
+                  </a>
+                </li>
                 <li>{t("setup.windowsStep1")}</li>
                 <li>
                   {t("setup.windowsStep2")}

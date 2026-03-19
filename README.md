@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="web/src/assets/Obex_DNS_Logo-256.png" alt="Obex DNS Logo" width="128">
+  <img src="web/src/assets/Obex_DNS_Logo-256.webp" alt="Obex DNS Logo" width="128">
   <h1>Obex DNS</h1>
   <p>Protective DNS resolver based on Cloudflare Workers & D1</p>
   <p align="center">
@@ -24,6 +24,20 @@ DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS conn
 *   **Prevent Hijacking**: Prevents ISPs or third parties from tampering with DNS responses.
 *   **Enhance Privacy**: Hides your browsing history through an encrypted tunnel.
 *   **Bypass Censorship**: Provides more stable resolution in restricted network environments.
+
+---
+
+## ✨ Core Features
+
+-   🚀 **Ultra-fast Resolution**: Fully based on edge computing with extremely low global latency.
+-   **Multi-profile Management**: Supports creating multiple independent configurations, each with a unique endpoint.
+-   🛡️ **Granular Filtering**:
+    -   **Allow/Block Lists**: Supports exact domain and subdomain wildcard matching.
+    -   **Third-party Rule Sets**: Supports subscribing to external blocklists in formats like AdGuard.
+    -   **Custom Redirection**: Supports custom overrides for A, AAAA, TXT, and CNAME records.
+-   📊 **Real-time Stats & Logs**: Visual dashboard recording every request's hit reason, geo-location, and upstream latency.
+-   🔐 **Privacy Enhancement**: Flexible ECS (EDNS Client Subnet) configuration (Forward, Custom, or Hidden).
+-   🌗 **Modern UI**: Dark mode support, high-density management panel built with React + BlueprintJS.
 
 ---
 
@@ -52,20 +66,6 @@ DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS conn
 | Mobile Logs | Mobile Stats |
 |:---:|:---:|
 | ![Mobile Logs](docs/screenshots/dns.obex-mobile_log.webp) | ![Mobile Stats](docs/screenshots/dns.obex-mobile_stats.webp) |
-
----
-
-## ✨ Core Features
-
--   🚀 **Ultra-fast Resolution**: Fully based on edge computing with extremely low global latency.
--   **Multi-profile Management**: Supports creating multiple independent configurations, each with a unique endpoint.
--   🛡️ **Granular Filtering**:
-    -   **Allow/Block Lists**: Supports exact domain and subdomain wildcard matching.
-    -   **Third-party Rule Sets**: Supports subscribing to external blocklists in formats like AdGuard.
-    -   **Custom Redirection**: Supports custom overrides for A, AAAA, TXT, and CNAME records.
--   📊 **Real-time Stats & Logs**: Visual dashboard recording every request's hit reason, geo-location, and upstream latency.
--   🔐 **Privacy Enhancement**: Flexible ECS (EDNS Client Subnet) configuration (Forward, Custom, or Hidden).
--   🌗 **Modern UI**: Dark mode support, high-density management panel built with React + BlueprintJS.
 
 ---
 
