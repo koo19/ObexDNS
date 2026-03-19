@@ -26,7 +26,8 @@
     "invalidFormat": "无效文件格式",
     "import": "导入",
     "importSuccess": "配置成功导入",
-    "importError": "配置导入失败，请确保格式正确且稍后再试"
+    "importError": "配置导入失败，请确保格式正确且稍后再试",
+    "save": "保存"
   },
   "nav": {
     "setup": "安装",
@@ -335,7 +336,12 @@
     "clearLogsSuccess": "日志已成功清空",
     "confirmDeleteAccount": "警告：确定要注销并删除本账号吗？\n\n阁下所有 DNS 配置、自定义规则和查询日志将被永久删除。此操作不可逆！",
     "inactivityPolicy": "活跃度政策",
-    "inactivityDesc": "为节省资源，180 天内无任何解析活动的账号将被自动清理，包括其配置与所有关联日志。"
+    "inactivityDesc": "为节省资源，180 天内无任何解析活动的账号将被自动清理，包括其配置与所有关联日志。",
+    "systemSettings": "系统设置",
+    "featureToggle": "功能开关",
+    "adminOnlyView": "仅管理员可见",
+    "enableTurnstileSignup": "启用注册验证码",
+    "enableTurnstileLogin": "启用登录验证码"
   },
   "intro": {
     "item1Title": "Obex 保护性 DNS",

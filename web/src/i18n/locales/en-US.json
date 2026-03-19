@@ -26,7 +26,8 @@
     "invalidFormat": "Invalid File Format",
     "import": "Import",
     "importSuccess": "Profile imported successfully",
-    "importError": "Failed to import profile, please ensure the format is correct and try again later"
+    "importError": "Failed to import profile, please ensure the format is correct and try again later",
+    "save": "Save"
   },
   "nav": {
     "setup": "Setup",
@@ -335,7 +336,12 @@
     "clearLogsSuccess": "Logs cleared successfully",
     "confirmDeleteAccount": "WARNING: Are you sure you want to delete this account?\n\nAll your DNS configurations, custom rules, and query logs will be permanently deleted. This action is irreversible!",
     "inactivityPolicy": "Inactivity Policy",
-    "inactivityDesc": "To save resources, accounts with no DNS activity in the last 180 days will be automatically cleaned up, including their configurations and all associated logs."
+    "inactivityDesc": "To save resources, accounts with no DNS activity in the last 180 days will be automatically cleaned up, including their configurations and all associated logs.",
+    "systemSettings": "System Settings",
+    "featureToggle": "Feature Toggle",
+    "adminOnlyView": "Admin Only View",
+    "enableTurnstileSignup": "Enable Turnstile on Signup",
+    "enableTurnstileLogin": "Enable Turnstile on Login"
   },
   "intro": {
     "item1Title": "Obex Protective DNS",
