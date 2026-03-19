@@ -143,7 +143,7 @@ export const SetupView: React.FC<SetupViewProps> = ({
           enriched[key] = {
             label: presetRegions[key]?.label || key,
             countries: presetRegions[key]?.countries || [],
-            ips: ips as any
+            ips: ips as any,
           };
         }
         setServerRegions(enriched);
@@ -392,6 +392,15 @@ export const SetupView: React.FC<SetupViewProps> = ({
             <div className="space-y-4 md:ml-4 mt-4 md:mt-0">
               <H5 className="font-bold">{t("setup.browserTitle")}</H5>
               <p className="text-sm">{t("setup.browserSteps")}</p>
+              <p
+                className="text-[10px] opacity-50 cursor-pointer"
+                onClick={() => copyToClipboard("chrome://settings/security")}
+              >
+                {t(
+                  "setup.browserTips",
+                  "or copy this URL to the address bar: ",
+                ) + "chrome://settings/security"}
+              </p>
             </div>
           }
         />
@@ -408,7 +417,7 @@ export const SetupView: React.FC<SetupViewProps> = ({
             <div className="space-y-4 md:ml-4 mt-4 md:mt-0">
               <H5 className="font-bold">{t("setup.appleTitle")}</H5>
               <p className="text-sm">{t("setup.appleDesc")}</p>
-              <p className="text-[10px] opacity-50 mt-4! text-center">
+              <p className="text-[10px] opacity-50 text-center">
                 {t("setup.appleWarning")}
               </p>
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 flex flex-col items-center justify-center">
@@ -445,6 +454,11 @@ export const SetupView: React.FC<SetupViewProps> = ({
                 })}
               </H5>
               <ol className="list-decimal list-inside space-y-4 text-sm leading-relaxed">
+                <li>
+                  <a href="ms-settings:network-status">
+                    {t("setup.windowsStep0")}
+                  </a>
+                </li>
                 <li>{t("setup.windowsStep1")}</li>
                 <li>
                   {t("setup.windowsStep2")}
