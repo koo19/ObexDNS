@@ -324,7 +324,7 @@ export const AccountView: React.FC = () => {
                 <div className="space-y-4">
                   <H4 className="text-sm font-bold opacity-70 text-blue-500">Cloudflare Turnstile</H4>
                   <FormGroup label="Site Key"><InputGroup value={sysSettings.turnstile_site_key || ""} onChange={e => setSysSettings({...sysSettings, turnstile_site_key: e.target.value})} placeholder="0x000..." /></FormGroup>
-                  <FormGroup label="Secret Key" helperText={t("account.adminOnlyView", "仅管理员可见")}><InputGroup type="password" value={sysSettings.turnstile_secret_key || ""} onChange={e => setSysSettings({...sysSettings, turnstile_secret_key: e.target.value})} placeholder="0x000..." /></FormGroup>
+                  <FormGroup label="Secret Key"><InputGroup type="password" value={sysSettings.turnstile_secret_key || ""} onChange={e => setSysSettings({...sysSettings, turnstile_secret_key: e.target.value})} placeholder="0x000..." /></FormGroup>
                 </div>
                 <div className="space-y-4">
                   <H4 className="text-sm font-bold opacity-70 text-green-500">{t("account.featureToggle", "功能开关")}</H4>
