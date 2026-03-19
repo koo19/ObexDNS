@@ -27,6 +27,20 @@ DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS conn
 
 ---
 
+## ✨ Core Features
+
+-   🚀 **Ultra-fast Resolution**: Fully based on edge computing with extremely low global latency.
+-   **Multi-profile Management**: Supports creating multiple independent configurations, each with a unique endpoint.
+-   🛡️ **Granular Filtering**:
+    -   **Allow/Block Lists**: Supports exact domain and subdomain wildcard matching.
+    -   **Third-party Rule Sets**: Supports subscribing to external blocklists in formats like AdGuard.
+    -   **Custom Redirection**: Supports custom overrides for A, AAAA, TXT, and CNAME records.
+-   📊 **Real-time Stats & Logs**: Visual dashboard recording every request's hit reason, geo-location, and upstream latency.
+-   🔐 **Privacy Enhancement**: Flexible ECS (EDNS Client Subnet) configuration (Forward, Custom, or Hidden).
+-   🌗 **Modern UI**: Dark mode support, high-density management panel built with React + BlueprintJS.
+
+---
+
 ## 🖼️ Quick Look
 
 | User Login |
@@ -52,20 +66,6 @@ DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS conn
 | Mobile Logs | Mobile Stats |
 |:---:|:---:|
 | ![Mobile Logs](docs/screenshots/dns.obex-mobile_log.webp) | ![Mobile Stats](docs/screenshots/dns.obex-mobile_stats.webp) |
-
----
-
-## ✨ Core Features
-
--   🚀 **Ultra-fast Resolution**: Fully based on edge computing with extremely low global latency.
--   **Multi-profile Management**: Supports creating multiple independent configurations, each with a unique endpoint.
--   🛡️ **Granular Filtering**:
-    -   **Allow/Block Lists**: Supports exact domain and subdomain wildcard matching.
-    -   **Third-party Rule Sets**: Supports subscribing to external blocklists in formats like AdGuard.
-    -   **Custom Redirection**: Supports custom overrides for A, AAAA, TXT, and CNAME records.
--   📊 **Real-time Stats & Logs**: Visual dashboard recording every request's hit reason, geo-location, and upstream latency.
--   🔐 **Privacy Enhancement**: Flexible ECS (EDNS Client Subnet) configuration (Forward, Custom, or Hidden).
--   🌗 **Modern UI**: Dark mode support, high-density management panel built with React + BlueprintJS.
 
 ---
 
