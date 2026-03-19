@@ -18,6 +18,7 @@ import {
   Popover,
 } from "@blueprintjs/core";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 import {
   ShieldCheck,
   ListFilter,
@@ -642,30 +643,26 @@ function App() {
   const { t } = useTranslation();
   const { i18n } = useTranslation();
 
-  useEffect(() => {
-    document.documentElement.lang = i18n.language;
-  }, [i18n.language]);
-
-  // 动态网页标题
-  useEffect(() => {
-    const path = location.pathname;
+  // 获取当前页面的 SEO 信息
+  const getPageMeta = (path: string) => {
+    path = location.pathname;
     let moduleName = "";
-
+    let description = t("meta.defaultDesc", "Secure, fast, and customizable DNS resolution for all your devices. Based on Cloudflare Workers. Open-source and privacy-focused.");
+    
     if (path === "/dash") moduleName = t("common.selectProfile");
     else if (path === "/account") moduleName = t("common.account");
-    else if (path.endsWith("/setup")) moduleName = t("nav.setup");
+    else if (path.endsWith("/setup")) { moduleName = t("nav.setup"); description = t("meta.setupDesc", "Configure your devices to use Obex DNS."); }
     else if (path.endsWith("/filter")) moduleName = t("nav.filter");
     else if (path.endsWith("/rules")) moduleName = t("nav.rules");
     else if (path.endsWith("/settings")) moduleName = t("nav.settings");
     else if (path.endsWith("/stats")) moduleName = t("nav.stats");
     else if (path.endsWith("/logs")) moduleName = t("nav.logs");
 
-    if (moduleName) {
-      document.title = `${moduleName} | Obex DNS`;
-    } else {
-      document.title = "Obex DNS";
-    }
-  }, [location.pathname, t]);
+    const title = moduleName ? `${moduleName} | Obex DNS` : "Obex DNS";
+    return { title, description };
+  };
+
+  const pageMeta = getPageMeta(location.pathname);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -775,6 +772,11 @@ function App() {
           </div>
         }
       >
+        <Helmet>
+          <title>{pageMeta.title}</title>
+          <meta name="description" content={pageMeta.description} />
+          <html lang={i18n.language} />
+        </Helmet>
         <GitHubCorner />
         <AuthView onSuccess={checkAuthAndFetchData} />
       </Suspense>
@@ -788,6 +790,11 @@ function App() {
         </div>
       }
     >
+      <Helmet>
+        <title>{pageMeta.title}</title>
+        <meta name="description" content={pageMeta.description} />
+        <html lang={i18n.language} />
+      </Helmet>
       <GitHubCorner />
       <Routes>
         <Route path="/" element={<Navigate to="/dash" replace />} />
