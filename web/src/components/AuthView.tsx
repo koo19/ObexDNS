@@ -21,7 +21,7 @@ import {
   Cpu,
 } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import LogoIcon from "../assets/Obex_DNS_Logo-256.png";
+import LogoIcon from "../assets/Obex_DNS_Logo-256.webp";
 
 interface AuthViewProps {
   onSuccess: () => void;

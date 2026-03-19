@@ -18,6 +18,7 @@ import {
   Popover,
 } from "@blueprintjs/core";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 import {
   ShieldCheck,
   ListFilter,
@@ -47,23 +48,41 @@ import {
 } from "react-router-dom";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { GitHubCorner } from "./components/GithubCorner";
-import LogoIcon from "./assets/Obex_DNS_Logo-256.png";
+import LogoIcon from "./assets/Obex_DNS_Logo-256.webp";
 
 // --- 预加载工具函数 ---
-function lazyWithPreload<T extends React.ComponentType<any>>(factory: () => Promise<{ default: T }>) {
+function lazyWithPreload<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>,
+) {
   const Component = lazy(factory);
   (Component as any).preload = factory;
   return Component as unknown as T & { preload: () => Promise<{ default: T }> };
 }
 
-const AuthView = lazyWithPreload(() => import("./components/AuthView").then(m => ({ default: m.AuthView })));
-const SetupView = lazyWithPreload(() => import("./views/SetupView").then(m => ({ default: m.SetupView })));
-const FilteringView = lazyWithPreload(() => import("./views/FilteringView").then(m => ({ default: m.FilteringView })));
-const RulesView = lazyWithPreload(() => import("./views/RulesView").then(m => ({ default: m.RulesView })));
-const SettingsView = lazyWithPreload(() => import("./views/SettingsView").then(m => ({ default: m.SettingsView })));
-const AnalyticsView = lazyWithPreload(() => import("./views/AnalyticsView").then(m => ({ default: m.AnalyticsView })));
-const LogsView = lazyWithPreload(() => import("./views/LogsView").then(m => ({ default: m.LogsView })));
-const AccountView = lazyWithPreload(() => import("./views/AccountView").then(m => ({ default: m.AccountView })));
+const AuthView = lazyWithPreload(() =>
+  import("./components/AuthView").then((m) => ({ default: m.AuthView })),
+);
+const SetupView = lazyWithPreload(() =>
+  import("./views/SetupView").then((m) => ({ default: m.SetupView })),
+);
+const FilteringView = lazyWithPreload(() =>
+  import("./views/FilteringView").then((m) => ({ default: m.FilteringView })),
+);
+const RulesView = lazyWithPreload(() =>
+  import("./views/RulesView").then((m) => ({ default: m.RulesView })),
+);
+const SettingsView = lazyWithPreload(() =>
+  import("./views/SettingsView").then((m) => ({ default: m.SettingsView })),
+);
+const AnalyticsView = lazyWithPreload(() =>
+  import("./views/AnalyticsView").then((m) => ({ default: m.AnalyticsView })),
+);
+const LogsView = lazyWithPreload(() =>
+  import("./views/LogsView").then((m) => ({ default: m.LogsView })),
+);
+const AccountView = lazyWithPreload(() =>
+  import("./views/AccountView").then((m) => ({ default: m.AccountView })),
+);
 
 // 预加载策略：在合适的时间点拉取资源
 const preloadMainViews = () => {
@@ -155,24 +174,26 @@ const DashboardHome = ({
       });
 
       if (data.rules && Array.isArray(data.rules)) {
-        await Promise.all(data.rules.map((rule: any) => 
-          fetch(`/api/profiles/${newId}/rules`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: rule.type,
-              pattern: rule.pattern,
-              v_a: rule.v_a,
-              v_aaaa: rule.v_aaaa,
-              v_cname: rule.v_cname,
-              v_txt: rule.v_txt
+        await Promise.all(
+          data.rules.map((rule: any) =>
+            fetch(`/api/profiles/${newId}/rules`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: rule.type,
+                pattern: rule.pattern,
+                v_a: rule.v_a,
+                v_aaaa: rule.v_aaaa,
+                v_cname: rule.v_cname,
+                v_txt: rule.v_txt,
+              }),
             }),
-          })
-        ));
+          ),
+        );
       }
 
       alert(t("common.importSuccess", "配置导入成功"));
-      onRefresh?.(); 
+      onRefresh?.();
     } catch (e) {
       console.error(e);
       alert(t("common.importError", "导入失败"));
@@ -215,7 +236,9 @@ const DashboardHome = ({
             <Popover
               content={
                 <div className="p-4 space-y-3">
-                  <div className="font-bold text-sm">{t("common.confirmLogout")}</div>
+                  <div className="font-bold text-sm">
+                    {t("common.confirmLogout")}
+                  </div>
                   <Button
                     fill
                     intent={Intent.DANGER}
@@ -618,27 +641,28 @@ function App() {
   const location = useLocation();
   const toasterRef = useRef<OverlayToaster | null>(null);
   const { t } = useTranslation();
+  const { i18n } = useTranslation();
 
-  // 动态网页标题
-  useEffect(() => {
-    const path = location.pathname;
+  // 获取当前页面的 SEO 信息
+  const getPageMeta = (path: string) => {
+    path = location.pathname;
     let moduleName = "";
-
+    let description = t("meta.defaultDesc", "Secure, fast, and customizable DNS resolution for all your devices. Based on Cloudflare Workers. Open-source and privacy-focused.");
+    
     if (path === "/dash") moduleName = t("common.selectProfile");
     else if (path === "/account") moduleName = t("common.account");
-    else if (path.endsWith("/setup")) moduleName = t("nav.setup");
+    else if (path.endsWith("/setup")) { moduleName = t("nav.setup"); description = t("meta.setupDesc", "Configure your devices to use Obex DNS."); }
     else if (path.endsWith("/filter")) moduleName = t("nav.filter");
     else if (path.endsWith("/rules")) moduleName = t("nav.rules");
     else if (path.endsWith("/settings")) moduleName = t("nav.settings");
     else if (path.endsWith("/stats")) moduleName = t("nav.stats");
     else if (path.endsWith("/logs")) moduleName = t("nav.logs");
 
-    if (moduleName) {
-      document.title = `${moduleName} | Obex DNS`;
-    } else {
-      document.title = "Obex DNS";
-    }
-  }, [location.pathname, t]);
+    const title = moduleName ? `${moduleName} | Obex DNS` : "Obex DNS";
+    return { title, description };
+  };
+
+  const pageMeta = getPageMeta(location.pathname);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -741,14 +765,36 @@ function App() {
     );
   if (!isLoggedIn)
     return (
-      <Suspense fallback={<div className="h-screen flex items-center justify-center"><Spinner size={50} /></div>}>
+      <Suspense
+        fallback={
+          <div className="h-screen flex items-center justify-center">
+            <Spinner size={50} />
+          </div>
+        }
+      >
+        <Helmet>
+          <title>{pageMeta.title}</title>
+          <meta name="description" content={pageMeta.description} />
+          <html lang={i18n.language} />
+        </Helmet>
         <GitHubCorner />
         <AuthView onSuccess={checkAuthAndFetchData} />
       </Suspense>
     );
 
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Spinner size={50} /></div>}>
+    <Suspense
+      fallback={
+        <div className="h-screen flex items-center justify-center">
+          <Spinner size={50} />
+        </div>
+      }
+    >
+      <Helmet>
+        <title>{pageMeta.title}</title>
+        <meta name="description" content={pageMeta.description} />
+        <html lang={i18n.language} />
+      </Helmet>
       <GitHubCorner />
       <Routes>
         <Route path="/" element={<Navigate to="/dash" replace />} />
@@ -857,7 +903,13 @@ const ProfileRoutes = ({
   const { profileId } = useParams();
   const id = profileId || selectedProfile?.id || "";
   return (
-    <Suspense fallback={<div className="p-20 flex justify-center"><Spinner size={40} /></div>}>
+    <Suspense
+      fallback={
+        <div className="p-20 flex justify-center">
+          <Spinner size={40} />
+        </div>
+      }
+    >
       <Routes>
         <Route
           path="setup"
@@ -881,7 +933,9 @@ const ProfileRoutes = ({
         <Route path="stats" element={<AnalyticsView profileId={id} />} />
         <Route
           path="logs"
-          element={<LogsView profileId={id} onQuickAction={handleQuickAction} />}
+          element={
+            <LogsView profileId={id} onQuickAction={handleQuickAction} />
+          }
         />
         <Route path="*" element={<NotFoundView />} />
       </Routes>

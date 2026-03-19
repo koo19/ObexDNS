@@ -4,11 +4,14 @@ import "./i18n/config";
 import App from "./App.tsx";
 import { OverlaysProvider } from "@blueprintjs/core";
 import { BrowserRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 
 createRoot(document.getElementById("root")!).render(
   <OverlaysProvider>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </HelmetProvider>
   </OverlaysProvider>
 );
