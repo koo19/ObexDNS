@@ -915,7 +915,10 @@ const ProfileRoutes = ({
           path="setup"
           element={<SetupView profileId={id} toasterRef={toasterRef} />}
         />
-        <Route path="filter" element={<FilteringView profileId={id} />} />
+        <Route
+          path="filter"
+          element={<FilteringView profileId={id} toasterRef={toasterRef} />}
+        />
         <Route
           path="rules"
           element={
