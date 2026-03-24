@@ -21,7 +21,7 @@ import {
   Cpu,
 } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import LogoIcon from "../assets/Obex_DNS_Logo-256.webp";
+import LogoIcon from "../assets/obex_cat_eye_logo-256.webp";
 
 // 扩展 Window 接口以支持 Turnstile
 declare global {
