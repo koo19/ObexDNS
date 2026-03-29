@@ -82,6 +82,16 @@ DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS conn
 │   ├── pipeline/         # DNS Resolution Pipeline (Core business logic)
 │   └── utils/            # Utilities (Cache, GeoIP, DNS Codec, Bloom Filter)
 ├── web/                  # React/BlueprintJS UI frontend project
+│   ├── public/           # Public static files
+│   ├── src/              # Frontend source code
+│   │   ├── assets/       # Static assets (images, icons, etc.)
+│   │   ├── components/   # Reusable UI components
+│   │   ├── i18n/         # Internationalization (i18n) configuration
+│   │   ├── pages/        # Dashboard, logs, settings, and other pages
+│   │   ├── services/     # API request encapsulation
+│   │   └── views/        # View components
+│   └── package.json      # Frontend dependencies configuration
+├── static/               # Compiled static resources
 ├── migrations/           # D1 Database migration scripts
 └── wrangler.toml         # Cloudflare deployment configuration
 ```
@@ -95,8 +105,7 @@ When a DNS request arrives, it goes through the following processing stages:
     -   **Redirection**: If hit, returns custom records.
     -   **Blacklist**: If hit, returns NXDOMAIN.
 4.  **External List Filtering**:
-    -   Uses **Bloom Filter** for rapid initial screening.
-    -   Combines with **Cache API** to cache verdict results, reducing database pressure.
+    -   Use a **Bloom filter** for fast filtering.
 5.  **Upstream Resolution**: If none of the above hit, requests the upstream DoH server based on configuration, with optional ECS support.
 6.  **Async Logging & Caching**: Asynchronously records resolution logs, fetches target GeoIP, and writes results to various cache levels.
 
