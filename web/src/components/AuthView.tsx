@@ -133,8 +133,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
   } | null>(null);
 
   // Turnstile 相关
+  const [turnstileReady, setTurnstileReady] = useState(!!window.turnstile);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -152,8 +154,11 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
 
   useEffect(() => {
     if (isTurnstileEnabled && authConfig?.turnstile_site_key && !window.turnstile) {
+      window.onloadTurnstileCallback = () => {
+        setTurnstileReady(true);
+      };
       const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback";
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);
@@ -161,16 +166,41 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
   }, [isTurnstileEnabled, authConfig]);
 
   useEffect(() => {
-    if (isTurnstileEnabled && authConfig?.turnstile_site_key && window.turnstile && turnstileRef.current) {
-      turnstileRef.current.innerHTML = "";
-      window.turnstile.render(turnstileRef.current, {
-        sitekey: authConfig.turnstile_site_key,
-        callback: (token: string) => setTurnstileToken(token),
-        "expired-callback": () => setTurnstileToken(null),
-        "error-callback": () => setTurnstileToken(null),
-      });
+    if (isTurnstileEnabled && authConfig?.turnstile_site_key && (turnstileReady || window.turnstile) && turnstileRef.current) {
+      try {
+        // 清理之前的实例
+        if (widgetIdRef.current && window.turnstile) {
+          window.turnstile.remove(widgetIdRef.current);
+          widgetIdRef.current = null;
+        }
+        
+        turnstileRef.current.innerHTML = "";
+        const widgetId = window.turnstile.render(turnstileRef.current, {
+          sitekey: authConfig.turnstile_site_key,
+          callback: (token: string) => {
+            setTurnstileToken(token);
+            setError("");
+          },
+          "expired-callback": () => setTurnstileToken(null),
+          "error-callback": (err: any) => {
+            console.error("Turnstile error:", err);
+            setError(t("auth.turnstileError", "Verification service failed to load. Please check your Site Key or domain settings."));
+            setTurnstileToken(null);
+          },
+        });
+        widgetIdRef.current = widgetId;
+      } catch (e) {
+        console.error("Turnstile render error:", e);
+      }
     }
-  }, [isTurnstileEnabled, authConfig, isLogin]);
+
+    return () => {
+      if (widgetIdRef.current && window.turnstile) {
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+    };
+  }, [isTurnstileEnabled, authConfig, isLogin, turnstileReady, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
