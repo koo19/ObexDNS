@@ -32,8 +32,8 @@ export async function syncProfileLists(profileId: string, env: Env, ctx: Executi
   const now = Math.floor(Date.now() / 1000);
 
   if (domainArray.length > 0 && env.BUCKET) {
-    // 1. 构建高精度布隆过滤器 (10^-6)
-    const falsePositiveRate = 0.000001;
+    // 构建高精度布隆过滤器 (10^-3)
+    const falsePositiveRate = 0.001;
     const bloom = BloomFilter.create(domainArray.length, falsePositiveRate);
     domainArray.forEach(d => bloom.add(d));
     const binary = bloom.toUint8Array();
