@@ -38,7 +38,7 @@ export async function syncProfileLists(profileId: string, env: Env, ctx: Executi
     domainArray.forEach(d => bloom.add(d));
     const binary = bloom.toUint8Array();
 
-    // 2. 仅存储至 R2
+    // 仅存储至 R2
     const r2Key = `bloom/${profileId}.bin`;
     await env.BUCKET.put(r2Key, binary, {
       httpMetadata: { contentType: 'application/octet-stream' },
@@ -48,10 +48,10 @@ export async function syncProfileLists(profileId: string, env: Env, ctx: Executi
       }
     });
 
-    // 3. 更新 lists 表记录的同步时间 (作为定时任务的索引)
+    // 更新 lists 表记录的同步时间 (作为定时任务的索引)
     await env.DB.prepare("UPDATE lists SET last_synced_at = ? WHERE profile_id = ?").bind(now, profileId).run();
 
-    // 4. 异步清理缓存
+    // 异步清理缓存
     if (ctx && typeof ctx.waitUntil === 'function') {
       ctx.waitUntil(pipelineCache.clear(profileId));
     }
