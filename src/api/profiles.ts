@@ -79,6 +79,15 @@ export async function handleProfilesRequest(request: Request, env: Env, user: Us
     // PATCH /api/profiles/:id/settings
     if (pathParts[3] === 'settings' && request.method === 'PATCH') {
       const newSettings = await request.json() as ProfileSettings;
+      
+      if (newSettings.upstream && Array.isArray(newSettings.upstream)) {
+        for (const url of newSettings.upstream) {
+          if (!url.startsWith('https://') && !url.startsWith('http://') && !url.startsWith('tcp://')) {
+            return new Response("Invalid upstream URL format. Only HTTP(S) and TCP are allowed.", { status: 400 });
+          }
+        }
+      }
+
       await profileModel.updateSettings(profileId, newSettings);
       const days = newSettings.log_retention_days || 30;
       const threshold = Math.floor(Date.now() / 1000 - (days * 24 * 3600));
@@ -181,6 +190,9 @@ export async function handleProfilesRequest(request: Request, env: Env, user: Us
       if (request.method === 'POST') {
         if (pathParts[4] === 'sync') { ctx.waitUntil(syncProfileLists(profileId, env, ctx)); return new Response(JSON.stringify({ message: "Sync started" }), { status: 202 }); }
         const { url: listUrl } = await request.json() as { url: string };
+        if (!listUrl || (!listUrl.startsWith('http://') && !listUrl.startsWith('https://'))) {
+          return new Response("Invalid list URL format", { status: 400 });
+        }
         await profileModel.addList(profileId, listUrl);
         ctx.waitUntil(syncProfileLists(profileId, env, ctx));
         ctx.waitUntil(pipeline.clearCache(profileId));

@@ -30,7 +30,7 @@ DoH (RFC 8484) is a protocol for performing DNS queries via encrypted HTTPS conn
 ## ✨ Core Features
 
 -   🚀 **Ultra-fast Resolution**: Fully based on edge computing with extremely low global latency.
--   **Multi-profile Management**: Supports creating multiple independent configurations, each with a unique endpoint.
+-   🗒️ **Multi-profile Management**: Supports creating multiple independent configurations, each with a unique endpoint.
 -   🛡️ **Granular Filtering**:
     -   **Allow/Block Lists**: Supports exact domain and subdomain wildcard matching.
     -   **Third-party Rule Sets**: Supports subscribing to external blocklists in formats like AdGuard.
